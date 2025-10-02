@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5001/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -27,7 +27,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    // Only redirect to login if it's a 401 on a protected route (not login/register)
+    if (error.response?.status === 401 && 
+        !error.config?.url?.includes('/login') && 
+        !error.config?.url?.includes('/register')) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
@@ -43,6 +46,8 @@ export const authAPI = {
 
 export const userAPI = {
   getProfile: () => api.get('/profile'),
+  getExamAttempts: () => api.get('/exam-attempts'),
+  getExamAttemptDetails: (attemptId) => api.get(`/exam-attempts/${attemptId}`),
 };
 
 export default api;

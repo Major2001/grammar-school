@@ -3,12 +3,13 @@ from app import db
 
 class Question(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    test_id = db.Column(db.Integer, db.ForeignKey('test.id'), nullable=False)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exam.id'), nullable=False)
     question_text = db.Column(db.Text, nullable=False)
     question_type = db.Column(db.String(50), nullable=False)  # 'multiple_choice', 'fill_blank', 'short_answer'
     subject = db.Column(db.String(20), nullable=False)  # 'math', 'english'
     question_context = db.Column(db.Text)  # Additional context for grouped questions
     difficulty = db.Column(db.String(20))  # 'easy', 'medium', 'hard'
+    marks = db.Column(db.Integer, default=1)  # Marks for this question (1 or 2)
     diagram_path = db.Column(db.String(255))  # Path to diagram image if any
     options = db.Column(db.JSON)  # Store answer options as JSON array
     correct_answer = db.Column(db.String(10))  # Store correct answer (e.g., 'A', 'B', etc.)
@@ -21,12 +22,13 @@ class Question(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'test_id': self.test_id,
+            'exam_id': self.exam_id,
             'question_text': self.question_text,
             'question_type': self.question_type,
             'subject': self.subject,
             'question_context': self.question_context,
             'difficulty': self.difficulty,
+            'marks': self.marks,
             'diagram_path': self.diagram_path,
             'options': self.options,
             'correct_answer': self.correct_answer,

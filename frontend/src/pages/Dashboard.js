@@ -6,7 +6,9 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
+  const [examAttempts, setExamAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [attemptsLoading, setAttemptsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,12 +30,32 @@ const Dashboard = () => {
       }
     };
 
+    const fetchExamAttempts = async () => {
+      try {
+        const response = await userAPI.getExamAttempts();
+        setExamAttempts(response.data.exam_attempts);
+      } catch (error) {
+        console.error('Failed to fetch exam attempts:', error);
+        setExamAttempts([]);
+      } finally {
+        setAttemptsLoading(false);
+      }
+    };
+
     fetchUserProfile();
+    fetchExamAttempts();
   }, [navigate]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const getPercentageClass = (percentage) => {
+    if (percentage >= 80) return 'excellent';
+    if (percentage >= 60) return 'good';
+    if (percentage >= 40) return 'average';
+    return 'poor';
   };
 
   if (loading) {
@@ -61,7 +83,7 @@ const Dashboard = () => {
       <main className="dashboard-main">
         <div className="welcome-section">
           <h2>Welcome to Grammar School!</h2>
-          <p>Your online testing platform is ready. More features coming soon!</p>
+          <p>Your online examing platform is ready. More features coming soon!</p>
         </div>
 
         <div className="user-details">
@@ -76,10 +98,73 @@ const Dashboard = () => {
           </div>
         </div>
 
+        <div className="exam-history-section">
+          <h3>Exam History</h3>
+          {attemptsLoading ? (
+            <div className="loading">Loading exam history...</div>
+          ) : examAttempts.length === 0 ? (
+            <div className="no-attempts">
+              <p>You haven't taken any exams yet.</p>
+              <p>Start your learning journey today!</p>
+            </div>
+          ) : (
+            <div className="attempts-table-container">
+              <table className="attempts-table">
+                <thead>
+                  <tr>
+                    <th>Exam Name</th>
+                    <th>Date Taken</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {examAttempts.map((attempt) => (
+                    <tr key={attempt.id}>
+                      <td className="exam-name">{attempt.exam_title || 'Unknown Exam'}</td>
+                      <td className="date-taken">
+                        {new Date(attempt.started_at).toLocaleDateString()}
+                      </td>
+                      <td className="score">
+                        {attempt.score || 0} / {attempt.total_marks || 0}
+                      </td>
+                      <td className="percentage">
+                        <span className={`percentage-badge ${getPercentageClass(attempt.score_percentage)}`}>
+                          {attempt.score_percentage?.toFixed(1) || 0}%
+                        </span>
+                      </td>
+                      <td className="duration">
+                        {attempt.duration_minutes ? `${attempt.duration_minutes} min` : 'N/A'}
+                      </td>
+                      <td className="status">
+                        <span className={`status-badge ${attempt.status}`}>
+                          {attempt.status.replace('_', ' ').toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="actions">
+                        <button 
+                          onClick={() => navigate(`/exam-review/${attempt.id}`)}
+                          className="view-btn"
+                          title="View exam details"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
         {user?.is_admin && (
           <div className="admin-section">
             <h3>Admin Tools</h3>
-            <p>Manage tests and system settings</p>
+            <p>Manage exams and system settings</p>
             <button 
               onClick={() => navigate('/admin')} 
               className="admin-btn"

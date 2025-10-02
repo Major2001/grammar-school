@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from app import db
 
-class Test(db.Model):
+class Exam(db.Model):
+    __tablename__ = 'exam'
+    
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text)
@@ -11,10 +13,10 @@ class Test(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     
     # Relationship
-    creator = db.relationship('User', backref='created_tests')
+    creator = db.relationship('User', backref='created_exams')
 
     def __repr__(self):
-        return f'<Test {self.title}>'
+        return f'<Exam {self.title}>'
     
     def to_dict(self):
         return {

@@ -4,6 +4,7 @@ import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import QuestionManager from './pages/QuestionManager';
+import ExamReview from './pages/ExamReview';
 import { isAuthenticated } from './utils/auth';
 
 function App() {
@@ -31,9 +32,15 @@ function App() {
             } 
           />
           <Route 
-            path="/admin/tests/:testId/questions" 
+            path="/admin/exams/:examId/questions" 
             element={
               isAuthenticated() ? <QuestionManager /> : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/exam-review/:attemptId" 
+            element={
+              isAuthenticated() ? <ExamReview /> : <Navigate to="/login" replace />
             } 
           />
           <Route path="/" element={<Navigate to="/login" replace />} />
