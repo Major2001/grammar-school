@@ -6,7 +6,7 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
-  const [testAttempts, setTestAttempts] = useState([]);
+  const [examAttempts, setExamAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [attemptsLoading, setAttemptsLoading] = useState(true);
   const navigate = useNavigate();
@@ -30,20 +30,20 @@ const Dashboard = () => {
       }
     };
 
-    const fetchTestAttempts = async () => {
+    const fetchExamAttempts = async () => {
       try {
-        const response = await userAPI.getTestAttempts();
-        setTestAttempts(response.data.test_attempts);
+        const response = await userAPI.getExamAttempts();
+        setExamAttempts(response.data.exam_attempts);
       } catch (error) {
-        console.error('Failed to fetch test attempts:', error);
-        setTestAttempts([]);
+        console.error('Failed to fetch exam attempts:', error);
+        setExamAttempts([]);
       } finally {
         setAttemptsLoading(false);
       }
     };
 
     fetchUserProfile();
-    fetchTestAttempts();
+    fetchExamAttempts();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -83,7 +83,7 @@ const Dashboard = () => {
       <main className="dashboard-main">
         <div className="welcome-section">
           <h2>Welcome to Grammar School!</h2>
-          <p>Your online testing platform is ready. More features coming soon!</p>
+          <p>Your online examing platform is ready. More features coming soon!</p>
         </div>
 
         <div className="user-details">
@@ -98,13 +98,13 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="test-history-section">
-          <h3>Test History</h3>
+        <div className="exam-history-section">
+          <h3>Exam History</h3>
           {attemptsLoading ? (
-            <div className="loading">Loading test history...</div>
-          ) : testAttempts.length === 0 ? (
+            <div className="loading">Loading exam history...</div>
+          ) : examAttempts.length === 0 ? (
             <div className="no-attempts">
-              <p>You haven't taken any tests yet.</p>
+              <p>You haven't taken any exams yet.</p>
               <p>Start your learning journey today!</p>
             </div>
           ) : (
@@ -112,7 +112,7 @@ const Dashboard = () => {
               <table className="attempts-table">
                 <thead>
                   <tr>
-                    <th>Test Name</th>
+                    <th>Exam Name</th>
                     <th>Date Taken</th>
                     <th>Score</th>
                     <th>Percentage</th>
@@ -122,9 +122,9 @@ const Dashboard = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {testAttempts.map((attempt) => (
+                  {examAttempts.map((attempt) => (
                     <tr key={attempt.id}>
-                      <td className="test-name">{attempt.test_title || 'Unknown Test'}</td>
+                      <td className="exam-name">{attempt.exam_title || 'Unknown Exam'}</td>
                       <td className="date-taken">
                         {new Date(attempt.started_at).toLocaleDateString()}
                       </td>
@@ -146,9 +146,9 @@ const Dashboard = () => {
                       </td>
                       <td className="actions">
                         <button 
-                          onClick={() => navigate(`/test-review/${attempt.id}`)}
+                          onClick={() => navigate(`/exam-review/${attempt.id}`)}
                           className="view-btn"
-                          title="View test details"
+                          title="View exam details"
                         >
                           View
                         </button>
@@ -164,7 +164,7 @@ const Dashboard = () => {
         {user?.is_admin && (
           <div className="admin-section">
             <h3>Admin Tools</h3>
-            <p>Manage tests and system settings</p>
+            <p>Manage exams and system settings</p>
             <button 
               onClick={() => navigate('/admin')} 
               className="admin-btn"

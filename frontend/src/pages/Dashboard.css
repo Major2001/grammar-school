@@ -140,7 +140,7 @@
   background: #c82333;
 }
 
-.test-history-section {
+.exam-history-section {
   background: white;
   padding: 2rem;
   border-radius: 10px;
@@ -148,7 +148,7 @@
   margin: 2rem 0;
 }
 
-.test-history-section h3 {
+.exam-history-section h3 {
   color: #333;
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
@@ -200,7 +200,7 @@
   background-color: #f8f9fa;
 }
 
-.test-name {
+.exam-name {
   font-weight: 500;
   color: #333 !important;
 }
@@ -309,7 +309,7 @@
   
   .welcome-section,
   .user-details,
-  .test-history-section {
+  .exam-history-section {
     padding: 1.5rem;
   }
   

@@ -5,9 +5,9 @@ import { getUser, logout } from '../utils/auth';
 import './QuestionManager.css';
 
 const QuestionManager = () => {
-  const { testId } = useParams();
+  const { examId } = useParams();
   const navigate = useNavigate();
-  const [test, setTest] = useState(null);
+  const [exam, setExam] = useState(null);
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
@@ -17,8 +17,8 @@ const QuestionManager = () => {
   const [deleteModal, setDeleteModal] = useState({ show: false, questionId: null, questionText: '' });
 
   useEffect(() => {
-    fetchTestAndQuestions();
-  }, [testId]);
+    fetchExamAndQuestions();
+  }, [examId]);
 
   const showToast = (message, type = 'success') => {
     setToast({ show: true, message, type });
@@ -27,19 +27,19 @@ const QuestionManager = () => {
     }, 2500);
   };
 
-  const fetchTestAndQuestions = async () => {
+  const fetchExamAndQuestions = async () => {
     try {
-      const [testResponse, questionsResponse] = await Promise.all([
-        adminAPI.getTest(testId),
-        adminAPI.getTestQuestions(testId)
+      const [examResponse, questionsResponse] = await Promise.all([
+        adminAPI.getExam(examId),
+        adminAPI.getExamQuestions(examId)
       ]);
-      setTest(testResponse.data.test);
+      setExam(examResponse.data.exam);
       const questionsData = questionsResponse.data.questions || [];
       console.log('Questions data:', questionsData);
       setQuestions(questionsData);
     } catch (error) {
       console.error('Failed to fetch data:', error);
-      const errorMessage = error.response?.data?.error || error.message || 'Failed to load test data';
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to load exam data';
       showToast(`Load failed: ${errorMessage}`, 'error');
     } finally {
       setLoading(false);
@@ -61,10 +61,10 @@ const QuestionManager = () => {
       // Ensure it's an array
       const questionsArray = Array.isArray(questionsData) ? questionsData : [questionsData];
       
-      await adminAPI.addQuestionsToTest(testId, { questions: questionsArray });
+      await adminAPI.addQuestionsToExam(examId, { questions: questionsArray });
       setQuestionsInput('');
       setShowAddForm(false);
-      fetchTestAndQuestions();
+      fetchExamAndQuestions();
       showToast(`Successfully added ${questionsArray.length} question(s)`, 'success');
     } catch (error) {
       console.error('Failed to add questions:', error);
@@ -89,8 +89,8 @@ const QuestionManager = () => {
 
   const handleDeleteQuestion = async () => {
     try {
-      await adminAPI.deleteQuestion(testId, deleteModal.questionId);
-      fetchTestAndQuestions();
+      await adminAPI.deleteQuestion(examId, deleteModal.questionId);
+      fetchExamAndQuestions();
       hideDeleteModal();
       showToast('Question deleted successfully', 'success');
     } catch (error) {
@@ -108,10 +108,10 @@ const QuestionManager = () => {
     );
   }
 
-  if (!test) {
+  if (!exam) {
     return (
       <div className="question-manager">
-        <div className="error">Test not found</div>
+        <div className="error">Exam not found</div>
       </div>
     );
   }
@@ -120,7 +120,7 @@ const QuestionManager = () => {
     <div className="question-manager">
       <header className="question-header">
         <div className="header-content">
-          <h1>Manage Questions: {test.title}</h1>
+          <h1>Manage Questions: {exam.title}</h1>
           <div className="header-actions">
             <button 
               onClick={() => setShowAddForm(!showAddForm)}

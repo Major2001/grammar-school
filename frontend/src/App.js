@@ -31,9 +31,15 @@ function App() {
             } 
           />
           <Route 
-            path="/admin/tests/:testId/questions" 
+            path="/admin/exams/:examId/questions" 
             element={
               isAuthenticated() ? <QuestionManager /> : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/exam-review/:attemptId" 
+            element={
+              isAuthenticated() ? <div>Exam Review Coming Soon</div> : <Navigate to="/login" replace />
             } 
           />
           <Route path="/" element={<Navigate to="/login" replace />} />
