@@ -252,7 +252,7 @@
   flex-wrap: wrap;
 }
 
-.question-type, .question-subject, .question-difficulty {
+.question-type, .question-subject, .question-difficulty, .question-marks {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
@@ -288,6 +288,11 @@
 .question-difficulty.hard {
   background: #fee2e2;
   color: #991b1b;
+}
+
+.question-marks {
+  background: #f3e8ff;
+  color: #7c3aed;
 }
 
 .question-context {

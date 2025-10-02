@@ -140,6 +140,153 @@
   background: #c82333;
 }
 
+.test-history-section {
+  background: white;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  margin: 2rem 0;
+}
+
+.test-history-section h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.no-attempts {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #666;
+}
+
+.no-attempts p {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.attempts-table-container {
+  overflow-x: auto;
+}
+
+.attempts-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.attempts-table th,
+.attempts-table td {
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.attempts-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #495057;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.attempts-table td {
+  color: #666;
+  font-size: 0.95rem;
+}
+
+.attempts-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.test-name {
+  font-weight: 500;
+  color: #333 !important;
+}
+
+.score {
+  font-weight: 500;
+  font-family: 'Courier New', monospace;
+}
+
+.percentage-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.percentage-badge.excellent {
+  background: #d4edda;
+  color: #155724;
+}
+
+.percentage-badge.good {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.percentage-badge.average {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.percentage-badge.poor {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.status-badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+
+.status-badge.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.in_progress {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.abandoned {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* Actions column */
+.attempts-table .actions {
+  text-align: center;
+  width: 100px;
+}
+
+.view-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  min-width: 60px;
+}
+
+.view-btn:hover {
+  background: #0056b3;
+  transform: translateY(-1px);
+}
+
+.view-btn:active {
+  transform: translateY(0);
+}
+
 .loading {
   display: flex;
   justify-content: center;
@@ -161,7 +308,23 @@
   }
   
   .welcome-section,
-  .user-details {
+  .user-details,
+  .test-history-section {
     padding: 1.5rem;
+  }
+  
+  .attempts-table th,
+  .attempts-table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .attempts-table th {
+    font-size: 0.8rem;
+  }
+  
+  /* Hide less important columns on mobile */
+  .attempts-table .duration {
+    display: none;
   }
 }

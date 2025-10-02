@@ -1,26 +1,26 @@
 import api from './api';
 
 export const adminAPI = {
-  // Get all tests
-  getTests: () => api.get('/admin/tests'),
+  // Get all exams
+  getExams: () => api.get('/admin/exams'),
   
-  // Get specific test
-  getTest: (testId) => api.get(`/admin/tests/${testId}`),
+  // Get specific exam
+  getExam: (examId) => api.get(`/admin/exams/${examId}`),
   
-  // Create new test
-  createTest: (testData) => api.post('/admin/tests', testData),
+  // Create new exam
+  createExam: (examData) => api.post('/admin/exams', examData),
   
-  // Delete test
-  deleteTest: (testId) => api.delete(`/admin/tests/${testId}`),
+  // Delete exam
+  deleteExam: (examId) => api.delete(`/admin/exams/${examId}`),
   
-  // Toggle test status
-  toggleTestStatus: (testId) => api.patch(`/admin/tests/${testId}/toggle`),
+  // Toggle exam status
+  toggleExamStatus: (examId) => api.patch(`/admin/exams/${examId}/toggle`),
 
   // Question management
-  getTestQuestions: (testId) => api.get(`/admin/tests/${testId}/questions`),
-  addQuestionsToTest: (testId, questionsData) => api.post(`/admin/tests/${testId}/questions`, questionsData),
-  updateQuestion: (testId, questionId, questionData) => api.put(`/admin/tests/${testId}/questions/${questionId}`, questionData),
-  deleteQuestion: (testId, questionId) => api.delete(`/admin/tests/${testId}/questions/${questionId}`),
+  getExamQuestions: (examId) => api.get(`/admin/exams/${examId}/questions`),
+  addQuestionsToExam: (examId, questionsData) => api.post(`/admin/exams/${examId}/questions`, questionsData),
+  updateQuestion: (examId, questionId, questionData) => api.put(`/admin/exams/${examId}/questions/${questionId}`, questionData),
+  deleteQuestion: (examId, questionId) => api.delete(`/admin/exams/${examId}/questions/${questionId}`),
 
   // Diagram upload
   uploadDiagram: (file) => {

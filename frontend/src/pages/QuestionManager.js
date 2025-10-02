@@ -152,6 +152,7 @@ const QuestionManager = () => {
   "subject": "math",
   "question_context": "Geometry - Area calculation",
   "difficulty": "medium",
+  "marks": 2,
   "diagram_path": "https://example.com/diagrams/triangle.png",
   "options": ["12 sq cm", "15 sq cm", "18 sq cm", "20 sq cm"],
   "correct_answer": "15 sq cm"
@@ -212,6 +213,9 @@ const QuestionManager = () => {
                           {String(question.difficulty)}
                         </span>
                       )}
+                      <span className="question-marks">
+                        {question.marks || 1} mark{(question.marks || 1) !== 1 ? 's' : ''}
+                      </span>
                     </div>
                   </div>
                   

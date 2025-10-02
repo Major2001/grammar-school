@@ -6,7 +6,9 @@ import './Dashboard.css';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
+  const [testAttempts, setTestAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [attemptsLoading, setAttemptsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,12 +30,32 @@ const Dashboard = () => {
       }
     };
 
+    const fetchTestAttempts = async () => {
+      try {
+        const response = await userAPI.getTestAttempts();
+        setTestAttempts(response.data.test_attempts);
+      } catch (error) {
+        console.error('Failed to fetch test attempts:', error);
+        setTestAttempts([]);
+      } finally {
+        setAttemptsLoading(false);
+      }
+    };
+
     fetchUserProfile();
+    fetchTestAttempts();
   }, [navigate]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const getPercentageClass = (percentage) => {
+    if (percentage >= 80) return 'excellent';
+    if (percentage >= 60) return 'good';
+    if (percentage >= 40) return 'average';
+    return 'poor';
   };
 
   if (loading) {
@@ -74,6 +96,69 @@ const Dashboard = () => {
               <p><strong>Role:</strong> <span className="admin-badge">Administrator</span></p>
             )}
           </div>
+        </div>
+
+        <div className="test-history-section">
+          <h3>Test History</h3>
+          {attemptsLoading ? (
+            <div className="loading">Loading test history...</div>
+          ) : testAttempts.length === 0 ? (
+            <div className="no-attempts">
+              <p>You haven't taken any tests yet.</p>
+              <p>Start your learning journey today!</p>
+            </div>
+          ) : (
+            <div className="attempts-table-container">
+              <table className="attempts-table">
+                <thead>
+                  <tr>
+                    <th>Test Name</th>
+                    <th>Date Taken</th>
+                    <th>Score</th>
+                    <th>Percentage</th>
+                    <th>Duration</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {testAttempts.map((attempt) => (
+                    <tr key={attempt.id}>
+                      <td className="test-name">{attempt.test_title || 'Unknown Test'}</td>
+                      <td className="date-taken">
+                        {new Date(attempt.started_at).toLocaleDateString()}
+                      </td>
+                      <td className="score">
+                        {attempt.score || 0} / {attempt.total_marks || 0}
+                      </td>
+                      <td className="percentage">
+                        <span className={`percentage-badge ${getPercentageClass(attempt.score_percentage)}`}>
+                          {attempt.score_percentage?.toFixed(1) || 0}%
+                        </span>
+                      </td>
+                      <td className="duration">
+                        {attempt.duration_minutes ? `${attempt.duration_minutes} min` : 'N/A'}
+                      </td>
+                      <td className="status">
+                        <span className={`status-badge ${attempt.status}`}>
+                          {attempt.status.replace('_', ' ').toUpperCase()}
+                        </span>
+                      </td>
+                      <td className="actions">
+                        <button 
+                          onClick={() => navigate(`/test-review/${attempt.id}`)}
+                          className="view-btn"
+                          title="View test details"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
 
         {user?.is_admin && (
