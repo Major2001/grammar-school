@@ -1,19 +1,11 @@
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
-from werkzeug.utils import secure_filename
-import os
-import uuid
 from app.models.user import User
 from app.models.test import Test
+from app.models.question import Question
 from app import db
 
 admin_bp = Blueprint('admin', __name__)
-
-# Allowed file extensions
-ALLOWED_EXTENSIONS = {'pdf'}
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def require_admin():
     """Check if current user is admin"""
@@ -41,51 +33,27 @@ def get_tests():
 
 @admin_bp.route('/tests', methods=['POST'])
 @jwt_required()
-def upload_test():
-    """Upload a new test PDF (admin only)"""
+def create_test():
+    """Create a new test (admin only)"""
     admin_user = require_admin()
     if not admin_user:
         return jsonify({'error': 'Admin access required'}), 403
     
     try:
-        # Check if file is present
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file provided'}), 400
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
         
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
-        
-        if not allowed_file(file.filename):
-            return jsonify({'error': 'Only PDF files are allowed'}), 400
-        
-        # Get form data
-        title = request.form.get('title', '').strip()
-        description = request.form.get('description', '').strip()
+        title = data.get('title', '').strip()
+        description = data.get('description', '').strip()
         
         if not title:
             return jsonify({'error': 'Test title is required'}), 400
-        
-        # Create upload directory if it doesn't exist
-        upload_dir = os.path.join(current_app.root_path, 'uploads', 'tests')
-        os.makedirs(upload_dir, exist_ok=True)
-        
-        # Generate unique filename
-        file_extension = file.filename.rsplit('.', 1)[1].lower()
-        unique_filename = f"{uuid.uuid4()}.{file_extension}"
-        file_path = os.path.join(upload_dir, unique_filename)
-        
-        # Save file
-        file.save(file_path)
-        file_size = os.path.getsize(file_path)
         
         # Create test record
         test = Test(
             title=title,
             description=description,
-            pdf_filename=secure_filename(file.filename),
-            pdf_path=file_path,
-            file_size=file_size,
             created_by=admin_user.id
         )
         
@@ -93,13 +61,13 @@ def upload_test():
         db.session.commit()
         
         return jsonify({
-            'message': 'Test uploaded successfully',
+            'message': 'Test created successfully',
             'test': test.to_dict()
         }), 201
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'Failed to upload test'}), 500
+        return jsonify({'error': 'Failed to create test'}), 500
 
 @admin_bp.route('/tests/<int:test_id>', methods=['GET'])
 @jwt_required()
@@ -132,10 +100,6 @@ def delete_test(test_id):
         test = Test.query.get(test_id)
         if not test:
             return jsonify({'error': 'Test not found'}), 404
-        
-        # Delete file from filesystem
-        if os.path.exists(test.pdf_path):
-            os.remove(test.pdf_path)
         
         # Delete from database
         db.session.delete(test)
@@ -171,3 +135,130 @@ def toggle_test_status(test_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Failed to update test status'}), 500
+
+@admin_bp.route('/tests/<int:test_id>/questions', methods=['POST'])
+@jwt_required()
+def add_questions_to_test(test_id):
+    """Add questions to a test via JSON input (admin only)"""
+    admin_user = require_admin()
+    if not admin_user:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    try:
+        test = Test.query.get(test_id)
+        if not test:
+            return jsonify({'error': 'Test not found'}), 404
+        
+        data = request.get_json()
+        if not data or 'questions' not in data:
+            return jsonify({'error': 'Questions array is required'}), 400
+        
+        questions_data = data['questions']
+        if not isinstance(questions_data, list):
+            return jsonify({'error': 'Questions must be an array'}), 400
+        
+        created_questions = []
+        
+        for question_data in questions_data:
+            # Validate required fields
+            required_fields = ['question_text', 'question_type', 'subject']
+            for field in required_fields:
+                if field not in question_data:
+                    return jsonify({'error': f'Missing required field: {field}'}), 400
+            
+            # Create question
+            question = Question(
+                test_id=test_id,
+                question_text=question_data['question_text'],
+                question_type=question_data['question_type'],
+                subject=question_data['subject'],
+                question_context=question_data.get('question_context'),
+                difficulty=question_data.get('difficulty'),
+                diagram_path=question_data.get('diagram_path'),
+                options=question_data.get('options'),
+                correct_answer=question_data.get('correct_answer')
+            )
+            
+            db.session.add(question)
+            created_questions.append(question)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': f'Successfully added {len(created_questions)} questions',
+            'questions_count': len(created_questions),
+            'questions': [q.to_dict() for q in created_questions]
+        }), 201
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to add questions: {str(e)}'}), 500
+
+@admin_bp.route('/tests/<int:test_id>/questions', methods=['GET'])
+@jwt_required()
+def get_test_questions(test_id):
+    """Get all questions for a specific test (admin only)"""
+    admin_user = require_admin()
+    if not admin_user:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    try:
+        test = Test.query.get(test_id)
+        if not test:
+            return jsonify({'error': 'Test not found'}), 404
+        
+        questions = Question.query.filter_by(test_id=test_id).order_by(Question.id).all()
+        
+        return jsonify({
+            'test': test.to_dict(),
+            'questions': [question.to_dict() for question in questions]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch questions'}), 500
+
+@admin_bp.route('/questions/<int:question_id>', methods=['PUT'])
+@jwt_required()
+def update_question(question_id):
+    """Update a specific question (admin only)"""
+    admin_user = require_admin()
+    if not admin_user:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    try:
+        question = Question.query.get(question_id)
+        if not question:
+            return jsonify({'error': 'Question not found'}), 404
+        
+        data = request.get_json()
+        if not data:
+            return jsonify({'error': 'No data provided'}), 400
+        
+        # Update question fields
+        if 'question_text' in data:
+            question.question_text = data['question_text']
+        if 'question_type' in data:
+            question.question_type = data['question_type']
+        if 'subject' in data:
+            question.subject = data['subject']
+        if 'question_context' in data:
+            question.question_context = data['question_context']
+        if 'difficulty' in data:
+            question.difficulty = data['difficulty']
+        if 'diagram_path' in data:
+            question.diagram_path = data['diagram_path']
+        if 'options' in data:
+            question.options = data['options']
+        if 'correct_answer' in data:
+            question.correct_answer = data['correct_answer']
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Question updated successfully',
+            'question': question.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': 'Failed to update question'}), 500

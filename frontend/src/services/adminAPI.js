@@ -7,12 +7,8 @@ export const adminAPI = {
   // Get specific test
   getTest: (testId) => api.get(`/admin/tests/${testId}`),
   
-  // Upload new test
-  uploadTest: (formData) => api.post('/admin/tests', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
-  }),
+  // Create new test
+  createTest: (testData) => api.post('/admin/tests', testData),
   
   // Delete test
   deleteTest: (testId) => api.delete(`/admin/tests/${testId}`),

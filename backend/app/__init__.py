@@ -32,6 +32,7 @@ def create_app(config_name=None):
     # Import models to register them with SQLAlchemy
     from app.models.user import User
     from app.models.test import Test
+    from app.models.question import Question
     
     # Register blueprints
     from app.routes.auth import auth_bp

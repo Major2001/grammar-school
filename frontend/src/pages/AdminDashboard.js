@@ -7,18 +7,26 @@ import './AdminDashboard.css';
 const AdminDashboard = () => {
   const [tests, setTests] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [showUploadForm, setShowUploadForm] = useState(false);
-  const [uploadForm, setUploadForm] = useState({
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [createForm, setCreateForm] = useState({
     title: '',
-    description: '',
-    file: null
+    description: ''
   });
-  const [uploading, setUploading] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [deleteModal, setDeleteModal] = useState({ show: false, testId: null, testTitle: '' });
+  const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchTests();
   }, []);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: '' });
+    }, 2500);
+  };
 
   const fetchTests = async () => {
     try {
@@ -35,59 +43,55 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleFileChange = (e) => {
-    setUploadForm({
-      ...uploadForm,
-      file: e.target.files[0]
-    });
-  };
-
   const handleInputChange = (e) => {
-    setUploadForm({
-      ...uploadForm,
+    setCreateForm({
+      ...createForm,
       [e.target.name]: e.target.value
     });
   };
 
-  const handleUpload = async (e) => {
+  const handleCreateTest = async (e) => {
     e.preventDefault();
-    if (!uploadForm.file || !uploadForm.title) {
-      alert('Please select a file and enter a title');
+    if (!createForm.title) {
+      showToast('Please enter a test title', 'error');
       return;
     }
 
-    setUploading(true);
+    setCreating(true);
     try {
-      const formData = new FormData();
-      formData.append('file', uploadForm.file);
-      formData.append('title', uploadForm.title);
-      formData.append('description', uploadForm.description);
-
-      await adminAPI.uploadTest(formData);
-      setUploadForm({ title: '', description: '', file: null });
-      setShowUploadForm(false);
+      await adminAPI.createTest({
+        title: createForm.title,
+        description: createForm.description
+      });
+      setCreateForm({ title: '', description: '' });
+      setShowCreateForm(false);
       fetchTests();
-      alert('Test uploaded successfully!');
+      showToast('Test created successfully!', 'success');
     } catch (error) {
-      console.error('Upload failed:', error);
-      alert('Upload failed: ' + (error.response?.data?.error || 'Unknown error'));
+      console.error('Create failed:', error);
+      showToast('Create failed: ' + (error.response?.data?.error || 'Unknown error'), 'error');
     } finally {
-      setUploading(false);
+      setCreating(false);
     }
   };
 
-  const handleDeleteTest = async (testId) => {
-    if (!window.confirm('Are you sure you want to delete this test?')) {
-      return;
-    }
+  const showDeleteModal = (testId, testTitle) => {
+    setDeleteModal({ show: true, testId, testTitle });
+  };
 
+  const hideDeleteModal = () => {
+    setDeleteModal({ show: false, testId: null, testTitle: '' });
+  };
+
+  const handleDeleteTest = async () => {
     try {
-      await adminAPI.deleteTest(testId);
+      await adminAPI.deleteTest(deleteModal.testId);
       fetchTests();
-      alert('Test deleted successfully!');
+      hideDeleteModal();
+      showToast('Test deleted successfully!', 'success');
     } catch (error) {
       console.error('Delete failed:', error);
-      alert('Delete failed: ' + (error.response?.data?.error || 'Unknown error'));
+      showToast('Delete failed: ' + (error.response?.data?.error || 'Unknown error'), 'error');
     }
   };
 
@@ -95,18 +99,11 @@ const AdminDashboard = () => {
     try {
       await adminAPI.toggleTestStatus(testId);
       fetchTests();
+      showToast('Test status updated successfully!', 'success');
     } catch (error) {
       console.error('Toggle failed:', error);
-      alert('Failed to update test status');
+      showToast('Failed to update test status', 'error');
     }
-  };
-
-  const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const formatDate = (dateString) => {
@@ -128,10 +125,10 @@ const AdminDashboard = () => {
           <h1>Admin Dashboard</h1>
           <div className="header-actions">
             <button 
-              onClick={() => setShowUploadForm(!showUploadForm)}
-              className="upload-btn"
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className="create-btn"
             >
-              {showUploadForm ? 'Cancel' : 'Upload Test'}
+              {showCreateForm ? 'Cancel' : 'Create Test'}
             </button>
             <button onClick={() => navigate('/dashboard')} className="back-btn">
               Back to Dashboard
@@ -144,19 +141,20 @@ const AdminDashboard = () => {
       </header>
 
       <main className="admin-main">
-        {showUploadForm && (
-          <div className="upload-section">
-            <h2>Upload New Test</h2>
-            <form onSubmit={handleUpload} className="upload-form">
+        {showCreateForm && (
+          <div className="create-section">
+            <h2>Create New Test</h2>
+            <form onSubmit={handleCreateTest} className="create-form">
               <div className="form-group">
                 <label htmlFor="title">Test Title *</label>
                 <input
                   type="text"
                   id="title"
                   name="title"
-                  value={uploadForm.title}
+                  value={createForm.title}
                   onChange={handleInputChange}
                   required
+                  placeholder="Enter test title"
                 />
               </div>
 
@@ -165,30 +163,20 @@ const AdminDashboard = () => {
                 <textarea
                   id="description"
                   name="description"
-                  value={uploadForm.description}
+                  value={createForm.description}
                   onChange={handleInputChange}
                   rows="3"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="file">PDF File *</label>
-                <input
-                  type="file"
-                  id="file"
-                  accept=".pdf"
-                  onChange={handleFileChange}
-                  required
+                  placeholder="Enter test description (optional)"
                 />
               </div>
 
               <div className="form-actions">
-                <button type="submit" disabled={uploading} className="submit-btn">
-                  {uploading ? 'Uploading...' : 'Upload Test'}
+                <button type="submit" disabled={creating} className="submit-btn">
+                  {creating ? 'Creating...' : 'Create Test'}
                 </button>
                 <button 
                   type="button" 
-                  onClick={() => setShowUploadForm(false)}
+                  onClick={() => setShowCreateForm(false)}
                   className="cancel-btn"
                 >
                   Cancel
@@ -202,9 +190,9 @@ const AdminDashboard = () => {
           <h2>Test Management</h2>
           {tests.length === 0 ? (
             <div className="no-tests">
-              <p>No tests uploaded yet.</p>
-              <button onClick={() => setShowUploadForm(true)} className="upload-btn">
-                Upload First Test
+              <p>No tests created yet.</p>
+              <button onClick={() => setShowCreateForm(true)} className="create-btn">
+                Create First Test
               </button>
             </div>
           ) : (
@@ -226,16 +214,13 @@ const AdminDashboard = () => {
                   
                   <div className="test-details">
                     <div className="detail-item">
-                      <strong>File:</strong> {test.pdf_filename}
+                      <strong>Created:</strong> {formatDate(test.created_at)}
                     </div>
                     <div className="detail-item">
-                      <strong>Size:</strong> {formatFileSize(test.file_size)}
+                      <strong>Updated:</strong> {formatDate(test.updated_at)}
                     </div>
                     <div className="detail-item">
-                      <strong>Uploaded:</strong> {formatDate(test.created_at)}
-                    </div>
-                    <div className="detail-item">
-                      <strong>Parsed:</strong> {test.is_parsed ? 'Yes' : 'No'}
+                      <strong>Status:</strong> {test.is_active ? 'Active' : 'Inactive'}
                     </div>
                   </div>
                   
@@ -247,7 +232,7 @@ const AdminDashboard = () => {
                       {test.is_active ? 'Deactivate' : 'Activate'}
                     </button>
                     <button 
-                      onClick={() => handleDeleteTest(test.id)}
+                      onClick={() => showDeleteModal(test.id, test.title)}
                       className="delete-btn"
                     >
                       Delete
@@ -259,6 +244,43 @@ const AdminDashboard = () => {
           )}
         </div>
       </main>
+
+      {/* Custom Delete Modal */}
+      {deleteModal.show && (
+        <div className="modal-overlay" onClick={hideDeleteModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>Delete Test</h3>
+              <button className="modal-close" onClick={hideDeleteModal}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to delete the test:</p>
+              <p className="test-title-highlight">"{deleteModal.testTitle}"</p>
+              <p>This action cannot be undone.</p>
+            </div>
+            <div className="modal-footer">
+              <button className="modal-cancel" onClick={hideDeleteModal}>
+                Cancel
+              </button>
+              <button className="modal-delete" onClick={handleDeleteTest}>
+                Delete Test
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`toast toast-${toast.type}`}>
+          <div className="toast-content">
+            <span className="toast-icon">
+              {toast.type === 'success' ? '✓' : '✕'}
+            </span>
+            <span className="toast-message">{toast.message}</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
