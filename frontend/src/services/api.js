@@ -48,6 +48,7 @@ export const userAPI = {
   getProfile: () => api.get('/profile'),
   getExamAttempts: () => api.get('/exam-attempts'),
   getExamAttemptDetails: (attemptId) => api.get(`/exam-attempts/${attemptId}`),
+  getAvailableExams: () => api.get('/available-exams'),
 };
 
 export default api;
