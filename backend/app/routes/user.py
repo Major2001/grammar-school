@@ -10,7 +10,7 @@ def get_profile():
     """Get user profile"""
     try:
         user_id = get_jwt_identity()
-        user = AuthService.get_user_by_id(user_id)
+        user = AuthService.get_user_by_id(int(user_id))
         
         if not user:
             return jsonify({'error': 'User not found'}), 404

@@ -36,7 +36,7 @@ class AuthService:
             db.session.commit()
             
             # Generate JWT token
-            access_token = create_access_token(identity=user.id)
+            access_token = create_access_token(identity=str(user.id))
             
             return {
                 'user': user.to_dict(),
@@ -61,7 +61,7 @@ class AuthService:
             return None, "Account is deactivated"
         
         # Generate JWT token
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         
         return {
             'user': user.to_dict(),

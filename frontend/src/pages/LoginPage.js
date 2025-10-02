@@ -8,9 +8,14 @@ const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
   const navigate = useNavigate();
 
+  console.log('LoginPage component rendering...');
+  console.log('isAuthenticated():', isAuthenticated());
+
   // Redirect if already authenticated
   React.useEffect(() => {
+    console.log('LoginPage useEffect running...');
     if (isAuthenticated()) {
+      console.log('User is authenticated, redirecting to dashboard');
       navigate('/dashboard');
     }
   }, [navigate]);

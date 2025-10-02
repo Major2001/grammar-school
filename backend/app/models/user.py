@@ -8,6 +8,7 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)
+    is_admin = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         return f'<User {self.username}>'
@@ -18,5 +19,6 @@ class User(db.Model):
             'username': self.username,
             'email': self.email,
             'created_at': self.created_at.isoformat(),
-            'is_active': self.is_active
+            'is_active': self.is_active,
+            'is_admin': self.is_admin
         }

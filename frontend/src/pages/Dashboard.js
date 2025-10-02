@@ -70,8 +70,24 @@ const Dashboard = () => {
             <p><strong>Username:</strong> {user?.username}</p>
             <p><strong>Email:</strong> {user?.email}</p>
             <p><strong>Member since:</strong> {new Date(user?.created_at).toLocaleDateString()}</p>
+            {user?.is_admin && (
+              <p><strong>Role:</strong> <span className="admin-badge">Administrator</span></p>
+            )}
           </div>
         </div>
+
+        {user?.is_admin && (
+          <div className="admin-section">
+            <h3>Admin Tools</h3>
+            <p>Manage tests and system settings</p>
+            <button 
+              onClick={() => navigate('/admin')} 
+              className="admin-btn"
+            >
+              Go to Admin Dashboard
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -31,14 +31,17 @@ def create_app(config_name=None):
     
     # Import models to register them with SQLAlchemy
     from app.models.user import User
+    from app.models.test import Test
     
     # Register blueprints
     from app.routes.auth import auth_bp
     from app.routes.user import user_bp
     from app.routes.health import health_bp
+    from app.routes.admin import admin_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api')
     app.register_blueprint(user_bp, url_prefix='/api')
     app.register_blueprint(health_bp, url_prefix='/api')
+    app.register_blueprint(admin_bp, url_prefix='/api/admin')
     
     return app

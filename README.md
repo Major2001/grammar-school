@@ -27,7 +27,26 @@ grammar-school/
 - Node.js 16+
 - PostgreSQL (optional, defaults to SQLite)
 
-### Backend Setup
+### 🚀 Super Quick Start
+
+**Start Backend:**
+```bash
+./start-backend.sh
+```
+
+**Start Frontend:**
+```bash
+./start-frontend.sh
+```
+
+That's it! The scripts will handle all setup automatically.
+
+### Manual Setup (if needed)
+
+<details>
+<summary>Click to expand manual setup instructions</summary>
+
+#### Backend Setup
 
 1. Navigate to the backend directory:
    ```bash
@@ -65,7 +84,7 @@ grammar-school/
 
 The backend will be available at `http://localhost:5000`
 
-### Frontend Setup
+#### Frontend Setup
 
 1. Navigate to the frontend directory:
    ```bash
@@ -88,6 +107,8 @@ The backend will be available at `http://localhost:5000`
    ```
 
 The frontend will be available at `http://localhost:3000`
+
+</details>
 
 ## API Endpoints
 
