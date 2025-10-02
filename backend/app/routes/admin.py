@@ -1,9 +1,12 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, send_from_directory
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from werkzeug.utils import secure_filename
 from app.models.user import User
 from app.models.test import Test
 from app.models.question import Question
 from app import db
+import os
+import uuid
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -262,3 +265,89 @@ def update_question(question_id):
     except Exception as e:
         db.session.rollback()
         return jsonify({'error': 'Failed to update question'}), 500
+
+@admin_bp.route('/tests/<int:test_id>/questions/<int:question_id>', methods=['DELETE'])
+@jwt_required()
+def delete_question(test_id, question_id):
+    """Delete a specific question (admin only)"""
+    admin_user = require_admin()
+    if not admin_user:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    try:
+        # Check if test exists
+        test = Test.query.get(test_id)
+        if not test:
+            return jsonify({'error': 'Test not found'}), 404
+        
+        # Check if question exists and belongs to the test
+        question = Question.query.filter_by(id=question_id, test_id=test_id).first()
+        if not question:
+            return jsonify({'error': 'Question not found'}), 404
+        
+        # Delete the question
+        db.session.delete(question)
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Question deleted successfully'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to delete question: {str(e)}'}), 500
+
+@admin_bp.route('/upload-diagram', methods=['POST'])
+@jwt_required()
+def upload_diagram():
+    """Upload a diagram image for questions (admin only)"""
+    admin_user = require_admin()
+    if not admin_user:
+        return jsonify({'error': 'Admin access required'}), 403
+    
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No file provided'}), 400
+        
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        # Check file type
+        allowed_extensions = {'png', 'jpg', 'jpeg', 'gif', 'svg', 'webp'}
+        if not ('.' in file.filename and 
+                file.filename.rsplit('.', 1)[1].lower() in allowed_extensions):
+            return jsonify({'error': 'Invalid file type. Allowed: png, jpg, jpeg, gif, svg, webp'}), 400
+        
+        # Create uploads directory if it doesn't exist
+        upload_dir = os.path.join(os.getcwd(), 'uploads', 'diagrams')
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        # Generate unique filename
+        file_extension = file.filename.rsplit('.', 1)[1].lower()
+        unique_filename = f"{uuid.uuid4().hex}.{file_extension}"
+        file_path = os.path.join(upload_dir, unique_filename)
+        
+        # Save file
+        file.save(file_path)
+        
+        # Return the URL path
+        diagram_url = f"/api/admin/diagrams/{unique_filename}"
+        
+        return jsonify({
+            'message': 'Diagram uploaded successfully',
+            'diagram_path': diagram_url,
+            'filename': unique_filename
+        }), 201
+        
+    except Exception as e:
+        return jsonify({'error': f'Failed to upload diagram: {str(e)}'}), 500
+
+@admin_bp.route('/diagrams/<filename>')
+def serve_diagram(filename):
+    """Serve uploaded diagram files"""
+    try:
+        upload_dir = os.path.join(os.getcwd(), 'uploads', 'diagrams')
+        return send_from_directory(upload_dir, filename)
+    except Exception as e:
+        return jsonify({'error': 'File not found'}), 404

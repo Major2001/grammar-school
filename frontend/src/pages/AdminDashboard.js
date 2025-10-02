@@ -226,6 +226,12 @@ const AdminDashboard = () => {
                   
                   <div className="test-actions">
                     <button 
+                      onClick={() => navigate(`/admin/tests/${test.id}/questions`)}
+                      className="manage-questions-btn"
+                    >
+                      Manage Questions
+                    </button>
+                    <button 
                       onClick={() => handleToggleStatus(test.id)}
                       className={`toggle-btn ${test.is_active ? 'deactivate' : 'activate'}`}
                     >

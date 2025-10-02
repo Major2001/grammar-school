@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import QuestionManager from './pages/QuestionManager';
 import { isAuthenticated } from './utils/auth';
 
 function App() {
@@ -27,6 +28,12 @@ function App() {
             path="/admin" 
             element={
               isAuthenticated() ? <AdminDashboard /> : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/admin/tests/:testId/questions" 
+            element={
+              isAuthenticated() ? <QuestionManager /> : <Navigate to="/login" replace />
             } 
           />
           <Route path="/" element={<Navigate to="/login" replace />} />
