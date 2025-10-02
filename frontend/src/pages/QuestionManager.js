@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { adminAPI } from '../services/adminAPI';
 import { getUser, logout } from '../utils/auth';
+import QuestionCard from '../components/QuestionCard';
 import './QuestionManager.css';
 
 const QuestionManager = () => {
@@ -198,83 +199,14 @@ const QuestionManager = () => {
           ) : (
             <div className="questions-list">
               {questions.map((question, index) => (
-                <div key={question.id} className="question-card">
-                  <div className="question-header">
-                    <h3>Question {index + 1}</h3>
-                    <div className="question-meta">
-                      <span className={`question-type ${question.question_type || ''}`}>
-                        {String(question.question_type || 'unknown')}
-                      </span>
-                      <span className={`question-subject ${question.subject || ''}`}>
-                        {String(question.subject || 'general')}
-                      </span>
-                      {question.difficulty && (
-                        <span className={`question-difficulty ${question.difficulty}`}>
-                          {String(question.difficulty)}
-                        </span>
-                      )}
-                      <span className="question-marks">
-                        {question.marks || 1} mark{(question.marks || 1) !== 1 ? 's' : ''}
-                      </span>
-                    </div>
-                  </div>
-                  
-                  {question.question_context && (
-                    <div className="question-context">
-                      <strong>Context:</strong> {String(question.question_context)}
-                    </div>
-                  )}
-                  
-                  <div className="question-text">
-                    {String(question.question_text || '')}
-                  </div>
-                  
-                  {question.diagram_path && (
-                    <div className="question-diagram">
-                      <img 
-                        src={question.diagram_path} 
-                        alt="Question diagram"
-                        className="diagram-image"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                          e.target.nextSibling.style.display = 'block';
-                        }}
-                      />
-                      <div className="diagram-error" style={{display: 'none'}}>
-                        <span>📷 Diagram not available</span>
-                        <small>Path: {question.diagram_path}</small>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {question.options && Array.isArray(question.options) && (
-                    <div className="question-options">
-                      <strong>Options:</strong>
-                      <ul>
-                        {question.options.map((option, idx) => (
-                          <li key={idx} className={option === question.correct_answer ? 'correct' : ''}>
-                            {String(option)} {option === question.correct_answer && '✓'}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
-                  {question.correct_answer && !question.options && (
-                    <div className="correct-answer">
-                      <strong>Correct Answer:</strong> {String(question.correct_answer)}
-                    </div>
-                  )}
-                  
-                  <div className="question-actions">
-                    <button 
-                      onClick={() => showDeleteModal(question.id, question.question_text)}
-                      className="delete-question-btn"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
+                <QuestionCard
+                  key={question.id}
+                  question={question}
+                  index={index}
+                  showAnswers={false}
+                  showDeleteButton={true}
+                  onDelete={(q) => showDeleteModal(q.id, q.question_text)}
+                />
               ))}
             </div>
           )}

@@ -32,14 +32,19 @@ const LoginForm = ({ onLoginSuccess, onSwitchToRegister }) => {
     setErrors({});
 
     try {
+      console.log('Attempting login with:', formData);
       const response = await authAPI.login(formData);
       const { access_token, user } = response.data;
       
+      console.log('Login successful:', user);
       setAuthToken(access_token);
       setUser(user);
       onLoginSuccess(user);
     } catch (error) {
+      console.error('Login error:', error);
+      console.error('Error response:', error.response?.data);
       const errorMessage = error.response?.data?.error || 'Login failed';
+      console.log('Setting error message:', errorMessage);
       setErrors({ general: errorMessage });
     } finally {
       setIsLoading(false);
