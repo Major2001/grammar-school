@@ -1,0 +1,136 @@
+/* Exam History Table Styles */
+.attempts-table-container {
+  margin-top: 20px;
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.attempts-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.attempts-table th,
+.attempts-table td {
+  padding: 12px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.attempts-table th {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+  position: sticky;
+  top: 0;
+}
+
+.attempts-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.exam-name {
+  font-weight: 500;
+  color: #333;
+  max-width: 200px;
+  word-wrap: break-word;
+}
+
+.date-taken {
+  color: #666;
+  white-space: nowrap;
+}
+
+.score {
+  font-weight: 500;
+  color: #333;
+}
+
+.percentage-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: white;
+}
+
+.percentage-badge.excellent {
+  background-color: #28a745;
+}
+
+.percentage-badge.good {
+  background-color: #17a2b8;
+}
+
+.percentage-badge.average {
+  background-color: #ffc107;
+  color: #333;
+}
+
+.percentage-badge.poor {
+  background-color: #dc3545;
+}
+
+.duration {
+  color: #666;
+  white-space: nowrap;
+}
+
+.status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.status-badge.completed {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.in_progress {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.view-btn {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.view-btn:hover {
+  background-color: #0056b3;
+}
+
+.no-attempts {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.no-attempts p {
+  margin: 8px 0;
+}
+
+.no-attempts p:first-child {
+  font-weight: 500;
+  color: #333;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+  font-style: italic;
+}

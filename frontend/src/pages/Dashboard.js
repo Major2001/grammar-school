@@ -2,13 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
 import { getUser, logout } from '../utils/auth';
+import { getPercentageClass, getLastAttemptForExam } from '../utils/helpers';
+import ExamHistoryTable from '../components/ExamHistoryTable';
+import AvailableExamsGrid from '../components/AvailableExamsGrid';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [examAttempts, setExamAttempts] = useState([]);
+  const [availableExams, setAvailableExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [attemptsLoading, setAttemptsLoading] = useState(true);
+  const [examsLoading, setExamsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('available');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -42,8 +48,21 @@ const Dashboard = () => {
       }
     };
 
+    const fetchAvailableExams = async () => {
+      try {
+        const response = await userAPI.getAvailableExams();
+        setAvailableExams(response.data.exams);
+      } catch (error) {
+        console.error('Failed to fetch available exams:', error);
+        setAvailableExams([]);
+      } finally {
+        setExamsLoading(false);
+      }
+    };
+
     fetchUserProfile();
     fetchExamAttempts();
+    fetchAvailableExams();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -51,12 +70,7 @@ const Dashboard = () => {
     navigate('/login');
   };
 
-  const getPercentageClass = (percentage) => {
-    if (percentage >= 80) return 'excellent';
-    if (percentage >= 60) return 'good';
-    if (percentage >= 40) return 'average';
-    return 'poor';
-  };
+
 
   if (loading) {
     return (
@@ -98,67 +112,45 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="exam-history-section">
-          <h3>Exam History</h3>
-          {attemptsLoading ? (
-            <div className="loading">Loading exam history...</div>
-          ) : examAttempts.length === 0 ? (
-            <div className="no-attempts">
-              <p>You haven't taken any exams yet.</p>
-              <p>Start your learning journey today!</p>
+        {/* Tabs Section */}
+        <div className="exams-section">
+          <div className="tabs-container">
+            <div className="tabs">
+              <button 
+                className={`tab ${activeTab === 'available' ? 'active' : ''}`}
+                onClick={() => setActiveTab('available')}
+              >
+                Available Exams
+              </button>
+              <button 
+                className={`tab ${activeTab === 'history' ? 'active' : ''}`}
+                onClick={() => setActiveTab('history')}
+              >
+                Exam History
+              </button>
             </div>
-          ) : (
-            <div className="attempts-table-container">
-              <table className="attempts-table">
-                <thead>
-                  <tr>
-                    <th>Exam Name</th>
-                    <th>Date Taken</th>
-                    <th>Score</th>
-                    <th>Percentage</th>
-                    <th>Duration</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {examAttempts.map((attempt) => (
-                    <tr key={attempt.id}>
-                      <td className="exam-name">{attempt.exam_title || 'Unknown Exam'}</td>
-                      <td className="date-taken">
-                        {new Date(attempt.started_at).toLocaleDateString()}
-                      </td>
-                      <td className="score">
-                        {attempt.score || 0} / {attempt.total_marks || 0}
-                      </td>
-                      <td className="percentage">
-                        <span className={`percentage-badge ${getPercentageClass(attempt.score_percentage)}`}>
-                          {attempt.score_percentage?.toFixed(1) || 0}%
-                        </span>
-                      </td>
-                      <td className="duration">
-                        {attempt.duration_minutes ? `${attempt.duration_minutes} min` : 'N/A'}
-                      </td>
-                      <td className="status">
-                        <span className={`status-badge ${attempt.status}`}>
-                          {attempt.status.replace('_', ' ').toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="actions">
-                        <button 
-                          onClick={() => navigate(`/exam-review/${attempt.id}`)}
-                          className="view-btn"
-                          title="View exam details"
-                        >
-                          View
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          </div>
+
+          <div className="tab-content">
+            {activeTab === 'available' && (
+              <div className="available-exams-tab">
+                <AvailableExamsGrid 
+                  availableExams={availableExams}
+                  examAttempts={examAttempts}
+                  loading={examsLoading}
+                />
+              </div>
+            )}
+
+            {activeTab === 'history' && (
+              <div className="exam-history-tab">
+                <ExamHistoryTable 
+                  examAttempts={examAttempts}
+                  loading={attemptsLoading}
+                />
+              </div>
+            )}
+          </div>
         </div>
 
         {user?.is_admin && (
