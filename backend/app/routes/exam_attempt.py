@@ -64,44 +64,6 @@ def get_exam_attempt_details(attempt_id):
     except Exception as e:
         return jsonify({'error': 'Failed to get exam attempt details'}), 500
 
-@exam_attempt_bp.route('/available-exams', methods=['GET'])
-@jwt_required()
-def get_available_exams():
-    """Get all available exams that user can take"""
-    try:
-        user_id = get_jwt_identity()
-        
-        # Get all active exams
-        exams = Exam.query.filter_by(is_active=True).order_by(Exam.created_at.desc()).all()
-        
-        # For each exam, check if user has already attempted it
-        exam_data = []
-        for exam in exams:
-            # Get user's latest attempt for this exam
-            latest_attempt = ExamAttempt.query.filter_by(
-                user_id=int(user_id), 
-                exam_id=exam.id
-            ).order_by(ExamAttempt.created_at.desc()).first()
-            
-            # Get questions and calculate total marks
-            questions = Question.query.filter_by(exam_id=exam.id).all()
-            question_count = len(questions)
-            total_marks = sum(getattr(q, 'marks', 1) for q in questions)
-            
-            exam_info = exam.to_dict()
-            exam_info['question_count'] = question_count
-            exam_info['has_attempted'] = latest_attempt is not None
-            exam_info['latest_attempt'] = latest_attempt.to_dict() if latest_attempt else None
-            
-            exam_data.append(exam_info)
-        
-        return jsonify({
-            'exams': exam_data
-        }), 200
-        
-    except Exception as e:
-        return jsonify({'error': 'Failed to get available exams'}), 500
-
 @exam_attempt_bp.route('/start-exam/<int:exam_id>', methods=['POST'])
 @jwt_required()
 def start_exam(exam_id):

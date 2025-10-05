@@ -40,12 +40,18 @@ def create_app(config_name=None):
     from app.routes.user import user_bp
     from app.routes.health import health_bp
     from app.routes.admin import admin_bp
+    from app.routes.exams import exams_bp
+    from app.routes.questions import questions_bp
     from app.routes.exam_attempt import exam_attempt_bp
+    from app.routes.diagrams import diagrams_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api')
     app.register_blueprint(user_bp, url_prefix='/api')
     app.register_blueprint(health_bp, url_prefix='/api')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
+    app.register_blueprint(exams_bp, url_prefix='/api')
+    app.register_blueprint(questions_bp, url_prefix='/api')
     app.register_blueprint(exam_attempt_bp, url_prefix='/api')
+    app.register_blueprint(diagrams_bp, url_prefix='/api')
     
     return app
