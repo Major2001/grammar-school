@@ -32,7 +32,7 @@ const QuestionManager = () => {
     try {
       const [examResponse, questionsResponse] = await Promise.all([
         adminAPI.getExam(examId),
-        adminAPI.getExamQuestions(examId)
+        adminAPI.getQuestions(examId)
       ]);
       setExam(examResponse.data.exam);
       const questionsData = questionsResponse.data.questions || [];
@@ -62,7 +62,7 @@ const QuestionManager = () => {
       // Ensure it's an array
       const questionsArray = Array.isArray(questionsData) ? questionsData : [questionsData];
       
-      await adminAPI.addQuestionsToExam(examId, { questions: questionsArray });
+      await adminAPI.addQuestions(examId, questionsArray);
       setQuestionsInput('');
       setShowAddForm(false);
       fetchExamAndQuestions();
@@ -90,7 +90,7 @@ const QuestionManager = () => {
 
   const handleDeleteQuestion = async () => {
     try {
-      await adminAPI.deleteQuestion(examId, deleteModal.questionId);
+      await adminAPI.deleteQuestion(deleteModal.questionId);
       fetchExamAndQuestions();
       hideDeleteModal();
       showToast('Question deleted successfully', 'success');

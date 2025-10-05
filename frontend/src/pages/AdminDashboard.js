@@ -95,9 +95,9 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleToggleStatus = async (examId) => {
+  const handleToggleStatus = async (examId, currentStatus) => {
     try {
-      await adminAPI.toggleExamStatus(examId);
+      await adminAPI.toggleExamStatus(examId, currentStatus);
       fetchExams();
       showToast('Exam status updated successfully!', 'success');
     } catch (error) {
@@ -232,7 +232,7 @@ const AdminDashboard = () => {
                       Manage Questions
                     </button>
                     <button 
-                      onClick={() => handleToggleStatus(exam.id)}
+                      onClick={() => handleToggleStatus(exam.id, exam.is_active)}
                       className={`toggle-btn ${exam.is_active ? 'deactivate' : 'activate'}`}
                     >
                       {exam.is_active ? 'Deactivate' : 'Activate'}

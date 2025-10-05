@@ -2,31 +2,34 @@ import api from './api';
 
 export const adminAPI = {
   // Get all exams
-  getExams: () => api.get('/admin/exams'),
+  getExams: () => api.get('/exams'),
   
   // Get specific exam
-  getExam: (examId) => api.get(`/admin/exams/${examId}`),
+  getExam: (examId) => api.get(`/exams/${examId}`),
   
   // Create new exam
-  createExam: (examData) => api.post('/admin/exams', examData),
+  createExam: (examData) => api.post('/exams', examData),
   
   // Delete exam
-  deleteExam: (examId) => api.delete(`/admin/exams/${examId}`),
+  deleteExam: (examId) => api.delete(`/exams/${examId}`),
   
-  // Toggle exam status
-  toggleExamStatus: (examId) => api.patch(`/admin/exams/${examId}/toggle`),
+  // Update exam (e.g., toggle status, update title/description)
+  updateExam: (examId, updateData) => api.patch(`/exams/${examId}`, updateData),
+  
+  // Helper: Toggle exam status (convenience method)
+  toggleExamStatus: (examId, currentStatus) => api.patch(`/exams/${examId}`, { is_active: !currentStatus }),
 
   // Question management
-  getExamQuestions: (examId) => api.get(`/admin/exams/${examId}/questions`),
-  addQuestionsToExam: (examId, questionsData) => api.post(`/admin/exams/${examId}/questions`, questionsData),
-  updateQuestion: (examId, questionId, questionData) => api.put(`/admin/exams/${examId}/questions/${questionId}`, questionData),
-  deleteQuestion: (examId, questionId) => api.delete(`/admin/exams/${examId}/questions/${questionId}`),
+  getQuestions: (examId) => api.get(`/questions?exam_id=${examId}`),
+  addQuestions: (examId, questionsData) => api.post(`/questions`, { exam_id: examId, questions: questionsData }),
+  updateQuestion: (questionId, questionData) => api.patch(`/questions/${questionId}`, questionData),
+  deleteQuestion: (questionId) => api.delete(`/questions/${questionId}`),
 
   // Diagram upload
   uploadDiagram: (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/admin/upload-diagram', formData, {
+    return api.post('/diagrams/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
