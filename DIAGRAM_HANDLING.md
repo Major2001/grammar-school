@@ -1,6 +1,6 @@
 # 📊 Diagram Path Handling Guide
 
-## Overview
+## Overvie
 The `diagram_path` field in questions allows you to include visual diagrams, charts, graphs, or images that accompany questions. This is especially useful for math, science, and visual learning questions.
 
 ## 🔧 How It Works
