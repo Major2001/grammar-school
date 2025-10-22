@@ -244,9 +244,16 @@
   background: #f8f9ff;
 }
 
-.option-label:has(input:checked) {
+.option-label:has(input:checked),
+.option-label.selected {
   border-color: #667eea;
   background: #f0f4ff;
+}
+
+.option-label:has(input:checked) .option-text,
+.option-label.selected .option-text {
+  color: #2d3748;
+  font-weight: 500;
 }
 
 .option-radio {

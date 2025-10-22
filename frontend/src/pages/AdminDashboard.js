@@ -166,12 +166,6 @@ const AdminDashboard = () => {
         <div className="header-content">
           <h1>Admin Dashboard</h1>
           <div className="header-actions">
-            <button 
-              onClick={() => setShowCreateForm(!showCreateForm)}
-              className="create-btn"
-            >
-              {showCreateForm ? 'Cancel' : 'Create Exam'}
-            </button>
             <button onClick={() => navigate('/dashboard')} className="back-btn">
               Back to Dashboard
             </button>
@@ -259,13 +253,15 @@ const AdminDashboard = () => {
         )}
 
         <div className="exams-section">
-          <h2>Exam Management</h2>
+          <div className="exams-header">
+            <h2>Exam Management</h2>
+            <button onClick={() => setShowCreateForm(true)} className="create-btn">
+              Create New Exam
+            </button>
+          </div>
           {exams.length === 0 ? (
             <div className="no-exams">
               <p>No exams created yet.</p>
-              <button onClick={() => setShowCreateForm(true)} className="create-btn">
-                Create First Exam
-              </button>
             </div>
           ) : (
             <div className="exams-grid">

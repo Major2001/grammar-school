@@ -212,13 +212,14 @@ const GradeExam = () => {
                     <div className="answer-options">
                       {question.options && question.options.map((option, optionIndex) => {
                         const optionLetter = String.fromCharCode(65 + optionIndex); // A, B, C, D
+                        const isSelected = answers[question.id] === optionLetter;
                         return (
-                          <label key={optionIndex} className="option-label">
+                          <label key={optionIndex} className={`option-label ${isSelected ? 'selected' : ''}`}>
                             <input
                               type="radio"
                               name={`question_${question.id}`}
                               value={optionLetter}
-                              checked={answers[question.id] === optionLetter}
+                              checked={isSelected}
                               onChange={(e) => handleAnswerChange(question.id, e.target.value)}
                               className="option-radio"
                             />
