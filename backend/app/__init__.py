@@ -32,7 +32,6 @@ def create_app(config_name=None):
     # Import models to register them with SQLAlchemy
     from app.models.user import User
     from app.models.exam import Exam
-    from app.models.question import Question
     from app.models.exam_attempt import ExamAttempt
     
     # Register blueprints
@@ -41,7 +40,6 @@ def create_app(config_name=None):
     from app.routes.health import health_bp
     from app.routes.admin import admin_bp
     from app.routes.exams import exams_bp
-    from app.routes.questions import questions_bp
     from app.routes.exam_attempt import exam_attempt_bp
     from app.routes.diagrams import diagrams_bp
     
@@ -50,7 +48,6 @@ def create_app(config_name=None):
     app.register_blueprint(health_bp, url_prefix='/api')
     app.register_blueprint(admin_bp, url_prefix='/api/admin')
     app.register_blueprint(exams_bp, url_prefix='/api')
-    app.register_blueprint(questions_bp, url_prefix='/api')
     app.register_blueprint(exam_attempt_bp, url_prefix='/api')
     app.register_blueprint(diagrams_bp, url_prefix='/api')
     

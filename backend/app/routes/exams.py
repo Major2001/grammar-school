@@ -2,7 +2,6 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
 from app.models.exam import Exam
-from app.models.question import Question
 from app.models.exam_attempt import ExamAttempt
 from app import db
 
@@ -61,10 +60,9 @@ def get_exams():
                     exam_id=exam.id
                 ).order_by(ExamAttempt.created_at.desc()).first()
                 
-                # Get questions and calculate total marks
-                questions = Question.query.filter_by(exam_id=exam.id).all()
-                question_count = len(questions)
-                total_marks = sum(getattr(q, 'marks', 1) for q in questions)
+                # Questions are now generated dynamically, so we use a default count
+                question_count = 50
+                total_marks = 50
                 
                 exam_info = exam.to_dict()
                 exam_info['question_count'] = question_count
@@ -87,7 +85,7 @@ def get_exams():
 @exams_bp.route('/exams', methods=['POST'])
 @jwt_required()
 def create_exam():
-    """Create a new exam (admin only)"""
+    """Create a new exam with answers (admin only)"""
     admin_user = require_admin()
     if not admin_user:
         return jsonify({'error': 'Admin access required'}), 403
@@ -99,15 +97,27 @@ def create_exam():
         
         title = data.get('title', '').strip()
         description = data.get('description', '').strip()
+        answers = data.get('answers', [])
         
         if not title:
             return jsonify({'error': 'Exam title is required'}), 400
+        
+        # Validate answers
+        if not answers or len(answers) != 50:
+            return jsonify({'error': 'Exactly 50 answers are required'}), 400
+        
+        # Validate each answer is A, B, C, or D
+        valid_answers = {'A', 'B', 'C', 'D'}
+        for i, answer in enumerate(answers):
+            if answer not in valid_answers:
+                return jsonify({'error': f'Invalid answer for question {i+1}. Must be A, B, C, or D'}), 400
         
         # Create exam record
         exam = Exam(
             title=title,
             description=description,
-            created_by=admin_user.id
+            created_by=admin_user.id,
+            answers=answers
         )
         
         db.session.add(exam)
@@ -125,21 +135,71 @@ def create_exam():
 @exams_bp.route('/exams/<int:exam_id>', methods=['GET'])
 @jwt_required()
 def get_exam(exam_id):
-    """Get specific exam details (admin only)"""
-    admin_user = require_admin()
-    if not admin_user:
-        return jsonify({'error': 'Admin access required'}), 403
+    """
+    Get specific exam details
+    - Admin: Full access to any exam
+    - User: Can view active exams with question counts by subject
+    """
+    user_id = get_jwt_identity()
+    user = User.query.get(int(user_id))
     
     try:
         exam = Exam.query.get(exam_id)
         if not exam:
             return jsonify({'error': 'Exam not found'}), 404
         
+        # Non-admin users can only view active exams
+        if not user.is_admin and not exam.is_active:
+            return jsonify({'error': 'Exam not found'}), 404
+        
+        # Get exam details
+        exam_data = exam.to_dict()
+        
+        # Add question count (always 50 for grading system)
+        exam_data['question_count'] = 50
+        exam_data['total_marks'] = 50
+        exam_data['subject_counts'] = {'English': 25, 'Maths': 25}  # Default breakdown
+        exam_data['difficulty_counts'] = {'easy': 15, 'medium': 20, 'hard': 15}  # Default breakdown
+        
         return jsonify({
-            'exam': exam.to_dict()
+            'exam': exam_data
         }), 200
     except Exception as e:
         return jsonify({'error': 'Failed to fetch exam'}), 500
+
+@exams_bp.route('/exams/<int:exam_id>/questions', methods=['GET'])
+@jwt_required()
+def get_exam_questions(exam_id):
+    """Get questions for an exam (for grading purposes) - returns 50 generic questions"""
+    user_id = get_jwt_identity()
+    user = User.query.get(int(user_id))
+    
+    try:
+        exam = Exam.query.get(exam_id)
+        if not exam:
+            return jsonify({'error': 'Exam not found'}), 404
+        
+        # Non-admin users can only view active exams
+        if not user.is_admin and not exam.is_active:
+            return jsonify({'error': 'Exam not found'}), 404
+        
+        # Generate 50 generic questions for grading
+        questions_data = []
+        for i in range(1, 51):
+            questions_data.append({
+                'id': i,
+                'question_text': f'Question {i}: Select the correct answer.',
+                'question_type': 'multiple_choice',
+                'subject': 'English' if i <= 25 else 'Maths',
+                'options': ['Option A', 'Option B', 'Option C', 'Option D'],
+                'marks': 1
+            })
+        
+        return jsonify({
+            'questions': questions_data
+        }), 200
+    except Exception as e:
+        return jsonify({'error': 'Failed to fetch exam questions'}), 500
 
 @exams_bp.route('/exams/<int:exam_id>', methods=['DELETE'])
 @jwt_required()
@@ -156,9 +216,6 @@ def delete_exam(exam_id):
         
         # Delete associated exam attempts first (foreign key constraint)
         ExamAttempt.query.filter_by(exam_id=exam_id).delete()
-        
-        # Delete associated questions
-        Question.query.filter_by(exam_id=exam_id).delete()
         
         # Delete the exam
         db.session.delete(exam)
@@ -218,6 +275,21 @@ def update_exam(exam_id):
             exam.description = data['description'].strip()
             updated_fields.append('description')
         
+        if 'answers' in data:
+            answers = data['answers']
+            # Validate answers
+            if not answers or len(answers) != 50:
+                return jsonify({'error': 'Exactly 50 answers are required'}), 400
+            
+            # Validate each answer is A, B, C, or D
+            valid_answers = {'A', 'B', 'C', 'D'}
+            for i, answer in enumerate(answers):
+                if answer not in valid_answers:
+                    return jsonify({'error': f'Invalid answer for question {i+1}. Must be A, B, C, or D'}), 400
+            
+            exam.answers = answers
+            updated_fields.append('answers')
+        
         if not updated_fields:
             return jsonify({'error': 'No valid fields provided'}), 400
         
@@ -233,6 +305,6 @@ def update_exam(exam_id):
         db.session.rollback()
         return jsonify({'error': 'Failed to update exam'}), 500
 
-# Note: Question management routes have been moved to questions.py
+# Note: Questions are now generated dynamically for grading
 
 

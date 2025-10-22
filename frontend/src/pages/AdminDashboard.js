@@ -10,9 +10,11 @@ const AdminDashboard = () => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [createForm, setCreateForm] = useState({
     title: '',
-    description: ''
+    description: '',
+    answers: Array(50).fill('A') // Initialize with 50 'A' answers
   });
   const [creating, setCreating] = useState(false);
+  const [editingExam, setEditingExam] = useState(null);
   const [deleteModal, setDeleteModal] = useState({ show: false, examId: null, examTitle: '' });
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const navigate = useNavigate();
@@ -50,6 +52,25 @@ const AdminDashboard = () => {
     });
   };
 
+  const handleAnswerChange = (questionIndex, answer) => {
+    const newAnswers = [...createForm.answers];
+    newAnswers[questionIndex] = answer;
+    setCreateForm({
+      ...createForm,
+      answers: newAnswers
+    });
+  };
+
+  const handleEditExam = (exam) => {
+    setEditingExam(exam);
+    setCreateForm({
+      title: exam.title,
+      description: exam.description || '',
+      answers: exam.answers || Array(50).fill('A')
+    });
+    setShowCreateForm(true);
+  };
+
   const handleCreateExam = async (e) => {
     e.preventDefault();
     if (!createForm.title) {
@@ -57,19 +78,40 @@ const AdminDashboard = () => {
       return;
     }
 
+    // Check if all 50 answers are provided
+    const hasEmptyAnswers = createForm.answers.some(answer => !answer);
+    if (hasEmptyAnswers) {
+      showToast('Please provide answers for all 50 questions', 'error');
+      return;
+    }
+
     setCreating(true);
     try {
-      await adminAPI.createExam({
-        title: createForm.title,
-        description: createForm.description
-      });
-      setCreateForm({ title: '', description: '' });
+      if (editingExam) {
+        // Edit existing exam
+        await adminAPI.updateExam(editingExam.id, {
+          title: createForm.title,
+          description: createForm.description,
+          answers: createForm.answers
+        });
+        showToast('Exam updated successfully!', 'success');
+      } else {
+        // Create new exam
+        await adminAPI.createExam({
+          title: createForm.title,
+          description: createForm.description,
+          answers: createForm.answers
+        });
+        showToast('Exam created successfully!', 'success');
+      }
+      
+      setCreateForm({ title: '', description: '', answers: Array(50).fill('A') });
+      setEditingExam(null);
       setShowCreateForm(false);
       fetchExams();
-      showToast('Exam created successfully!', 'success');
     } catch (error) {
-      console.error('Create failed:', error);
-      showToast('Create failed: ' + (error.response?.data?.error || 'Unknown error'), 'error');
+      console.error('Operation failed:', error);
+      showToast(`${editingExam ? 'Update' : 'Create'} failed: ` + (error.response?.data?.error || 'Unknown error'), 'error');
     } finally {
       setCreating(false);
     }
@@ -143,7 +185,7 @@ const AdminDashboard = () => {
       <main className="admin-main">
         {showCreateForm && (
           <div className="create-section">
-            <h2>Create New Exam</h2>
+            <h2>{editingExam ? 'Edit Exam' : 'Create New Exam'}</h2>
             <form onSubmit={handleCreateExam} className="create-form">
               <div className="form-group">
                 <label htmlFor="title">Exam Title *</label>
@@ -170,13 +212,43 @@ const AdminDashboard = () => {
                 />
               </div>
 
+              <div className="form-group">
+                <label>Answer Key (50 Questions)</label>
+                <div className="answers-grid">
+                  {createForm.answers.map((answer, index) => (
+                    <div key={index} className="answer-item">
+                      <label className="question-label">Q{index + 1}</label>
+                      <div className="answer-options">
+                        {['A', 'B', 'C', 'D'].map(option => (
+                          <label key={option} className="option-label">
+                            <input
+                              type="radio"
+                              name={`answer_${index}`}
+                              value={option}
+                              checked={answer === option}
+                              onChange={() => handleAnswerChange(index, option)}
+                              className="option-radio"
+                            />
+                            <span className="option-text">{option}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="form-actions">
                 <button type="submit" disabled={creating} className="submit-btn">
-                  {creating ? 'Creating...' : 'Create Exam'}
+                  {creating ? (editingExam ? 'Updating...' : 'Creating...') : (editingExam ? 'Update Exam' : 'Create Exam')}
                 </button>
                 <button 
                   type="button" 
-                  onClick={() => setShowCreateForm(false)}
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setEditingExam(null);
+                    setCreateForm({ title: '', description: '', answers: Array(50).fill('A') });
+                  }}
                   className="cancel-btn"
                 >
                   Cancel
@@ -226,10 +298,10 @@ const AdminDashboard = () => {
                   
                   <div className="exam-actions">
                     <button 
-                      onClick={() => navigate(`/admin/exams/${exam.id}/questions`)}
-                      className="manage-questions-btn"
+                      onClick={() => handleEditExam(exam)}
+                      className="edit-btn"
                     >
-                      Manage Questions
+                      Edit Exam
                     </button>
                     <button 
                       onClick={() => handleToggleStatus(exam.id, exam.is_active)}

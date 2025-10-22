@@ -109,10 +109,6 @@ const ExamReview = () => {
               </span>
             </div>
             <div className="stat">
-              <span className="stat-label">Duration:</span>
-              <span className="stat-value">
-                {attempt?.duration_minutes ? `${attempt.duration_minutes} minutes` : 'N/A'}
-              </span>
             </div>
             <div className="stat">
               <span className="stat-label">Status:</span>

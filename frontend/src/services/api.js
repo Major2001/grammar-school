@@ -49,6 +49,9 @@ export const userAPI = {
   getExamAttempts: () => api.get('/exam-attempts'),
   getExamAttemptDetails: (attemptId) => api.get(`/exam-attempts/${attemptId}`),
   getAvailableExams: () => api.get('/exams?status=active&include_attempts=true'),
+  getExamDetails: (examId) => api.get(`/exams/${examId}`),
+  getExamQuestions: (examId) => api.get(`/exams/${examId}/questions`),
+  submitGradedExam: (examId, answers) => api.post(`/submit-graded-exam/${examId}`, { answers }),
 };
 
 export default api;
