@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import LoginForm from '../components/LoginForm';
 import RegisterForm from '../components/RegisterForm';
-import { isAuthenticated } from '../utils/auth';
 
 const LoginPage = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const navigate = useNavigate();
 
   const handleLoginSuccess = (user) => {
     // Use window.location.href to force a full page reload

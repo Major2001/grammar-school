@@ -42,11 +42,15 @@ def get_exam_attempt_details(attempt_id):
         if not exam:
             return jsonify({'error': 'Exam not found'}), 404
         
-        # Generate 50 generic questions for display
+        # Generate 50 questions with correct answers from exam
         questions_data = []
         user_answers = attempt.user_answers or {}
+        exam_answers = exam.answers or []
         
         for i in range(1, 51):
+            # Get the correct answer for this question (0-indexed)
+            correct_answer = exam_answers[i-1] if i-1 < len(exam_answers) else 'A'
+            
             question_dict = {
                 'id': i,
                 'question_text': f'Question {i}: Select the correct answer.',
@@ -54,7 +58,8 @@ def get_exam_attempt_details(attempt_id):
                 'subject': 'English' if i <= 25 else 'Maths',
                 'options': ['Option A', 'Option B', 'Option C', 'Option D'],
                 'marks': 1,
-                'user_answer': user_answers.get(str(i), None)
+                'user_answer': user_answers.get(str(i), None),
+                'correct_answer': correct_answer
             }
             questions_data.append(question_dict)
         

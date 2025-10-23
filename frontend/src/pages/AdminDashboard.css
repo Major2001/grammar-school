@@ -627,7 +627,7 @@
   font-size: 14px;
 }
 
-.answer-options {
+.admin-dashboard .answer-options {
   display: flex !important;
   flex-direction: row !important;
   gap: 8px;
@@ -636,7 +636,7 @@
   align-items: center;
 }
 
-.option-label {
+.admin-dashboard .option-label {
   display: flex;
   align-items: center;
   gap: 2px;
@@ -649,27 +649,27 @@
   font-size: 12px;
 }
 
-.option-label:hover {
+.admin-dashboard .option-label:hover {
   background: #e9ecef;
 }
 
-.option-radio {
+.admin-dashboard .option-radio {
   margin: 0;
   accent-color: #007bff;
 }
 
-.option-text {
+.admin-dashboard .option-text {
   font-size: 14px;
   font-weight: 500;
   color: #495057;
 }
 
-.option-label:has(input:checked) {
+.admin-dashboard .option-label:has(input:checked) {
   background: #007bff;
   color: white;
 }
 
-.option-label:has(input:checked) .option-text {
+.admin-dashboard .option-label:has(input:checked) .option-text {
   color: white;
 }
 
@@ -686,14 +686,14 @@
     min-width: 250px;
   }
   
-  .answer-options {
+  .admin-dashboard .answer-options {
     gap: 6px;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: center;
   }
   
-  .option-label {
+  .admin-dashboard .option-label {
     padding: 2px 4px;
     min-width: 30px;
     font-size: 11px;

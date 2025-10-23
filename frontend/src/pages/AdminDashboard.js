@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminAPI } from '../services/adminAPI';
-import { getUser, logout } from '../utils/auth';
+import { logout } from '../utils/auth';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -19,18 +19,7 @@ const AdminDashboard = () => {
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchExams();
-  }, []);
-
-  const showToast = (message, type = 'success') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => {
-      setToast({ show: false, message: '', type: '' });
-    }, 2500);
-  };
-
-  const fetchExams = async () => {
+  const fetchExams = useCallback(async () => {
     try {
       const response = await adminAPI.getExams();
       setExams(response.data.exams);
@@ -43,6 +32,17 @@ const AdminDashboard = () => {
     } finally {
       setLoading(false);
     }
+  }, [navigate]);
+
+  useEffect(() => {
+    fetchExams();
+  }, [fetchExams]);
+
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => {
+      setToast({ show: false, message: '', type: '' });
+    }, 2500);
   };
 
   const handleInputChange = (e) => {

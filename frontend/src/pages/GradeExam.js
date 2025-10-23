@@ -200,15 +200,6 @@ const GradeExam = () => {
                     <div className="question-text">
                       {question.question_text}
                     </div>
-                    {question.diagram_path && (
-                      <div className="question-diagram">
-                        <img 
-                          src={`/api/diagrams/${question.diagram_path}`} 
-                          alt="Question diagram"
-                          className="diagram-image"
-                        />
-                      </div>
-                    )}
                     <div className="answer-options">
                       {question.options && question.options.map((option, optionIndex) => {
                         const optionLetter = String.fromCharCode(65 + optionIndex); // A, B, C, D
