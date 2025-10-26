@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: grammar-school-backend
+    environment:
+      - DATABASE_URL=sqlite:///grammar_school.db
+      - SECRET_KEY=your-secret-key-change-in-production
+      - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
+      - FLASK_ENV=development
+    ports:
+      - "5001:5001"
+    networks:
+      - grammar-school-network
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - database_data:/app/instance
+    command: >
+      sh -c "
+        python -m flask db upgrade &&
+        python run.py
+      "
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: grammar-school-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - grammar-school-network
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: grammar-school-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - grammar-school-network
+    restart: unless-stopped
+
+volumes:
+  database_data:
+
+networks:
+  grammar-school-network:
+    driver: bridge
