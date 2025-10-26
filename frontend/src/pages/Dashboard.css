@@ -74,7 +74,26 @@
 .welcome-section p {
   color: #666;
   font-size: 1.1rem;
-  margin: 0;
+  margin: 0 0 1rem 0;
+}
+
+.grade-exam-btn {
+  background: #667eea;
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+}
+
+.grade-exam-btn:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .user-details {
@@ -140,19 +159,6 @@
   background: #c82333;
 }
 
-.exam-history-section {
-  background: white;
-  padding: 2rem;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  margin: 2rem 0;
-}
-
-.exam-history-section h3 {
-  color: #333;
-  margin-bottom: 1.5rem;
-  font-size: 1.5rem;
-}
 
 .no-attempts {
   text-align: center;
@@ -287,201 +293,25 @@
   transform: translateY(0);
 }
 
-/* Tabs Styles */
+/* Exam Results Section */
 .exams-section {
   background: white;
   border-radius: 10px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
   margin: 2rem 0;
-  overflow: hidden;
-}
-
-.tabs-container {
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.tabs {
-  display: flex;
-}
-
-.tab {
-  background: none;
-  border: none;
-  padding: 1rem 2rem;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
-  color: #6b7280;
-  border-bottom: 3px solid transparent;
-  transition: all 0.2s ease;
-}
-
-.tab:hover {
-  color: #374151;
-  background: #f9fafb;
-}
-
-.tab.active {
-  color: #3b82f6;
-  border-bottom-color: #3b82f6;
-  background: white;
-}
-
-.tab-content {
   padding: 2rem;
 }
 
-/* Available Exams Grid - styles moved to AvailableExamsGrid.css */
-
-.exam-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 1rem;
+.exams-section h3 {
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
 }
 
-.exam-header h4 {
-  margin: 0;
-  color: #374151;
-  font-size: 1.25rem;
-  flex: 1;
+.exam-results-content {
+  /* Content styles handled by ExamHistoryTable component */
 }
 
-.exam-questions {
-  background: #e0e7ff;
-  color: #3730a3;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.875rem;
-  font-weight: 500;
-  white-space: nowrap;
-  margin-left: 1rem;
-}
-
-.exam-description {
-  color: #6b7280;
-  margin: 0 0 1rem 0;
-  line-height: 1.5;
-}
-
-.last-attempt {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-}
-
-.attempt-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-}
-
-.attempt-label {
-  font-weight: 500;
-  color: #374151;
-}
-
-.attempt-score {
-  font-weight: 600;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.875rem;
-}
-
-.attempt-score.excellent {
-  background: #d1fae5;
-  color: #065f46;
-}
-
-.attempt-score.good {
-  background: #dbeafe;
-  color: #1e40af;
-}
-
-.attempt-score.average {
-  background: #fef3c7;
-  color: #92400e;
-}
-
-.attempt-score.poor {
-  background: #fee2e2;
-  color: #991b1b;
-}
-
-.attempt-date {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.no-attempt {
-  background: #f3f4f6;
-  border: 1px dashed #d1d5db;
-  border-radius: 6px;
-  padding: 1rem;
-  text-align: center;
-  margin-bottom: 1rem;
-}
-
-.no-attempt-text {
-  color: #6b7280;
-  font-style: italic;
-}
-
-.exam-actions {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.take-exam-btn {
-  background: #10b981;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  flex: 1;
-  min-width: 120px;
-}
-
-.take-exam-btn:hover {
-  background: #059669;
-  transform: translateY(-1px);
-}
-
-.view-result-btn {
-  background: #6b7280;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  flex: 1;
-  min-width: 120px;
-}
-
-.view-result-btn:hover {
-  background: #4b5563;
-  transform: translateY(-1px);
-}
-
-.no-exams {
-  text-align: center;
-  padding: 3rem 2rem;
-  color: #6b7280;
-}
-
-.no-exams p {
-  margin: 0.5rem 0;
-  font-size: 1.1rem;
-}
 
 .loading {
   display: flex;
@@ -520,7 +350,4 @@
   }
   
   /* Hide less important columns on mobile */
-  .attempts-table .duration {
-    display: none;
-  }
 }

@@ -78,23 +78,6 @@ const QuestionCard = ({
           </div>
         )}
 
-        {question.diagram_path && (
-          <div className="question-diagram">
-            <img 
-              src={question.diagram_path} 
-              alt="Question diagram"
-              className="diagram-image"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextSibling.style.display = 'block';
-              }}
-            />
-            <div className="diagram-error" style={{display: 'none'}}>
-              <span>📷 Diagram not available</span>
-              <small>Path: {question.diagram_path}</small>
-            </div>
-          </div>
-        )}
 
         {/* Multiple Choice Options */}
         {question.question_type === 'multiple_choice' && options.length > 0 && (

@@ -2,35 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
 import { getUser, logout } from '../utils/auth';
-import { getPercentageClass, getLastAttemptForExam } from '../utils/helpers';
 import ExamHistoryTable from '../components/ExamHistoryTable';
-import AvailableExamsGrid from '../components/AvailableExamsGrid';
 import './Dashboard.css';
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [examAttempts, setExamAttempts] = useState([]);
-  const [availableExams, setAvailableExams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [attemptsLoading, setAttemptsLoading] = useState(true);
-  const [examsLoading, setExamsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('available');
   const navigate = useNavigate();
 
   useEffect(() => {
+    // First, try to get cached user data
+    const cachedUser = getUser();
+    
+    if (cachedUser) {
+      setUser(cachedUser);
+      setLoading(false);
+    }
+    
     const fetchUserProfile = async () => {
       try {
         const response = await userAPI.getProfile();
         setUser(response.data.user);
       } catch (error) {
         console.error('Failed to fetch user profile:', error);
-        // If profile fetch fails, use cached user data
-        const cachedUser = getUser();
-        if (cachedUser) {
-          setUser(cachedUser);
-        } else {
-          navigate('/login');
+        // If profile fetch fails and we don't have cached user, show error
+        if (!cachedUser) {
+          setUser(null);
         }
+        // If we have cached user, keep using it
       } finally {
         setLoading(false);
       }
@@ -48,21 +49,11 @@ const Dashboard = () => {
       }
     };
 
-    const fetchAvailableExams = async () => {
-      try {
-        const response = await userAPI.getAvailableExams();
-        setAvailableExams(response.data.exams);
-      } catch (error) {
-        console.error('Failed to fetch available exams:', error);
-        setAvailableExams([]);
-      } finally {
-        setExamsLoading(false);
-      }
-    };
-
-    fetchUserProfile();
+    // Only fetch profile if we don't have cached user
+    if (!cachedUser) {
+      fetchUserProfile();
+    }
     fetchExamAttempts();
-    fetchAvailableExams();
   }, [navigate]);
 
   const handleLogout = () => {
@@ -70,12 +61,24 @@ const Dashboard = () => {
     navigate('/login');
   };
 
-
-
   if (loading) {
     return (
       <div className="dashboard-container">
         <div className="loading">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="dashboard-container">
+        <div className="error-message">
+          <h2>Authentication Error</h2>
+          <p>Unable to load user profile. Please try logging in again.</p>
+          <button onClick={() => navigate('/login')} className="login-btn">
+            Go to Login
+          </button>
+        </div>
       </div>
     );
   }
@@ -97,7 +100,13 @@ const Dashboard = () => {
       <main className="dashboard-main">
         <div className="welcome-section">
           <h2>Welcome to Grammar School!</h2>
-          <p>Your online examing platform is ready. More features coming soon!</p>
+          <p>View your previous exam results and grade new exams.</p>
+          <button 
+            onClick={() => navigate('/grade-exam')} 
+            className="grade-exam-btn"
+          >
+            Grade New Exam
+          </button>
         </div>
 
         <div className="user-details">
@@ -112,44 +121,14 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Tabs Section */}
+        {/* Exam Results Section */}
         <div className="exams-section">
-          <div className="tabs-container">
-            <div className="tabs">
-              <button 
-                className={`tab ${activeTab === 'available' ? 'active' : ''}`}
-                onClick={() => setActiveTab('available')}
-              >
-                Available Exams
-              </button>
-              <button 
-                className={`tab ${activeTab === 'history' ? 'active' : ''}`}
-                onClick={() => setActiveTab('history')}
-              >
-                Exam History
-              </button>
-            </div>
-          </div>
-
-          <div className="tab-content">
-            {activeTab === 'available' && (
-              <div className="available-exams-tab">
-                <AvailableExamsGrid 
-                  availableExams={availableExams}
-                  examAttempts={examAttempts}
-                  loading={examsLoading}
-                />
-              </div>
-            )}
-
-            {activeTab === 'history' && (
-              <div className="exam-history-tab">
-                <ExamHistoryTable 
-                  examAttempts={examAttempts}
-                  loading={attemptsLoading}
-                />
-              </div>
-            )}
+          <h3>Your Exam Results</h3>
+          <div className="exam-results-content">
+            <ExamHistoryTable 
+              examAttempts={examAttempts}
+              loading={attemptsLoading}
+            />
           </div>
         </div>
 

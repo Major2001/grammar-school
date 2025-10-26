@@ -3,7 +3,6 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.models.user import User
 from app.models.exam import Exam
 from app.models.exam_attempt import ExamAttempt
-from app.models.question import Question
 from app import db
 from datetime import datetime, timezone
 
@@ -43,16 +42,25 @@ def get_exam_attempt_details(attempt_id):
         if not exam:
             return jsonify({'error': 'Exam not found'}), 404
         
-        # Get all questions for this exam
-        questions = Question.query.filter_by(exam_id=exam.id).order_by(Question.id).all()
-        
-        # Prepare questions data with user answers
+        # Generate 50 questions with correct answers from exam
         questions_data = []
         user_answers = attempt.user_answers or {}
+        exam_answers = exam.answers or []
         
-        for question in questions:
-            question_dict = question.to_dict()
-            question_dict['user_answer'] = user_answers.get(str(question.id), None)
+        for i in range(1, 51):
+            # Get the correct answer for this question (0-indexed)
+            correct_answer = exam_answers[i-1] if i-1 < len(exam_answers) else 'A'
+            
+            question_dict = {
+                'id': i,
+                'question_text': f'Question {i}: Select the correct answer.',
+                'question_type': 'multiple_choice',
+                'subject': 'English' if i <= 25 else 'Maths',
+                'options': ['Option A', 'Option B', 'Option C', 'Option D'],
+                'marks': 1,
+                'user_answer': user_answers.get(str(i), None),
+                'correct_answer': correct_answer
+            }
             questions_data.append(question_dict)
         
         return jsonify({
@@ -64,10 +72,11 @@ def get_exam_attempt_details(attempt_id):
     except Exception as e:
         return jsonify({'error': 'Failed to get exam attempt details'}), 500
 
-@exam_attempt_bp.route('/start-exam/<int:exam_id>', methods=['POST'])
+
+@exam_attempt_bp.route('/submit-graded-exam/<int:exam_id>', methods=['POST'])
 @jwt_required()
-def start_exam(exam_id):
-    """Start a new exam attempt"""
+def submit_graded_exam(exam_id):
+    """Submit a graded exam (user enters their answers and gets results)"""
     try:
         user_id = get_jwt_identity()
         
@@ -79,63 +88,6 @@ def start_exam(exam_id):
         if not exam.is_active:
             return jsonify({'error': 'Exam is not active'}), 400
         
-        # Get questions and calculate total marks
-        questions = Question.query.filter_by(exam_id=exam_id).all()
-        if not questions:
-            return jsonify({'error': 'Exam has no questions'}), 400
-        
-        question_count = len(questions)
-        total_marks = sum(getattr(q, 'marks', 1) for q in questions)  # Default to 1 if marks not set
-        
-        # Check if user has an in-progress attempt
-        existing_attempt = ExamAttempt.query.filter_by(
-            user_id=int(user_id),
-            exam_id=exam_id,
-            status='in_progress'
-        ).first()
-        
-        if existing_attempt:
-            return jsonify({
-                'message': 'Exam attempt already in progress',
-                'attempt': existing_attempt.to_dict()
-            }), 200
-        
-        # Create new exam attempt
-        attempt = ExamAttempt(
-            user_id=int(user_id),
-            exam_id=exam_id,
-            total_questions=question_count,
-            total_marks=total_marks,
-            status='in_progress'
-        )
-        
-        db.session.add(attempt)
-        db.session.commit()
-        
-        return jsonify({
-            'message': 'Exam started successfully',
-            'attempt': attempt.to_dict()
-        }), 201
-        
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({'error': 'Failed to start exam'}), 500
-
-@exam_attempt_bp.route('/submit-exam/<int:attempt_id>', methods=['POST'])
-@jwt_required()
-def submit_exam(attempt_id):
-    """Submit an exam attempt with answers"""
-    try:
-        user_id = get_jwt_identity()
-        
-        # Get the exam attempt and ensure it belongs to the current user
-        attempt = ExamAttempt.query.filter_by(id=attempt_id, user_id=int(user_id)).first()
-        if not attempt:
-            return jsonify({'error': 'Exam attempt not found'}), 404
-        
-        if attempt.status != 'in_progress':
-            return jsonify({'error': 'Exam attempt is not in progress'}), 400
-        
         # Get submitted answers
         data = request.get_json()
         if not data or 'answers' not in data:
@@ -143,28 +95,51 @@ def submit_exam(attempt_id):
         
         user_answers = data['answers']
         
-        # Get questions and calculate score
-        questions = Question.query.filter_by(exam_id=attempt.exam_id).all()
+        # Get exam and calculate score
+        exam = Exam.query.get(exam_id)
+        if not exam or not exam.answers:
+            return jsonify({'error': 'Exam has no answers configured'}), 400
+        
+        total_questions = 50
+        total_marks = 50
         total_score = 0
         
-        for question in questions:
-            user_answer = user_answers.get(str(question.id))
-            if user_answer and user_answer == question.correct_answer:
-                total_score += getattr(question, 'marks', 1)
+        # Calculate score by comparing user answers with exam answers
+        for i in range(50):
+            question_id = str(i + 1)
+            user_answer = user_answers.get(question_id)
+            correct_answer = exam.answers[i] if i < len(exam.answers) else None
+            
+            if user_answer and correct_answer and user_answer == correct_answer:
+                total_score += 1
         
-        # Update the attempt
-        attempt.user_answers = user_answers
-        attempt.score = total_score
-        attempt.status = 'completed'
-        attempt.completed_at = datetime.now(timezone.utc)
+        # Create exam attempt record
+        attempt = ExamAttempt(
+            user_id=int(user_id),
+            exam_id=exam_id,
+            total_questions=total_questions,
+            total_marks=total_marks,
+            score=total_score,
+            status='completed',
+            user_answers=user_answers,
+            completed_at=datetime.now(timezone.utc)
+        )
         
+        db.session.add(attempt)
         db.session.commit()
         
+        # Calculate percentage
+        score_percentage = round((total_score / total_marks) * 100, 1) if total_marks > 0 else 0
+        
         return jsonify({
-            'message': 'Exam submitted successfully',
-            'attempt': attempt.to_dict()
+            'message': 'Exam graded successfully',
+            'score': total_score,
+            'total_marks': total_marks,
+            'score_percentage': score_percentage,
+            'total_questions': total_questions,
+            'attempt_id': attempt.id
         }), 200
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': 'Failed to submit exam'}), 500
+        return jsonify({'error': 'Failed to grade exam'}), 500
