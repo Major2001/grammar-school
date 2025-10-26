@@ -22,8 +22,8 @@ FROM nginx:alpine
 # Copy built app to nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Use default nginx configuration (we'll override with volume mount)
+# Don't copy nginx.conf here - it will be mounted as a volume
 
 # Expose port
 EXPOSE 80
