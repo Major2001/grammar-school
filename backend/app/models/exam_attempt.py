@@ -40,12 +40,6 @@ class ExamAttempt(db.Model):
             return round((self.score / self.total_marks) * 100, 1)
         return 0.0
     
-    def get_duration_minutes(self):
-        """Get the duration of the exam attempt in minutes"""
-        if self.completed_at and self.started_at:
-            duration = self.completed_at - self.started_at
-            return round(duration.total_seconds() / 60, 1)
-        return None
     
     def to_dict(self):
         return {
@@ -60,7 +54,6 @@ class ExamAttempt(db.Model):
             'score': self.score,
             'score_percentage': self.get_score_percentage(),
             'status': self.status,
-            'duration_minutes': self.get_duration_minutes(),
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }

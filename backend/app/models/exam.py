@@ -12,6 +12,9 @@ class Exam(db.Model):
     updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
     
+    # Store answers for 50 questions (A, B, C, D)
+    answers = db.Column(db.JSON, default=list)  # List of 50 answers ['A', 'B', 'C', ...]
+    
     # Relationship
     creator = db.relationship('User', backref='created_exams')
 
@@ -26,5 +29,6 @@ class Exam(db.Model):
             'created_by': self.created_by,
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat(),
-            'is_active': self.is_active
+            'is_active': self.is_active,
+            'answers': self.answers or []
         }

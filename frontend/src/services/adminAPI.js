@@ -25,14 +25,4 @@ export const adminAPI = {
   updateQuestion: (questionId, questionData) => api.patch(`/questions/${questionId}`, questionData),
   deleteQuestion: (questionId) => api.delete(`/questions/${questionId}`),
 
-  // Diagram upload
-  uploadDiagram: (file) => {
-    const formData = new FormData();
-    formData.append('file', file);
-    return api.post('/diagrams/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-  },
 };

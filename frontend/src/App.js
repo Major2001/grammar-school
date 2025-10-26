@@ -3,13 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import QuestionManager from './pages/QuestionManager';
 import ExamReview from './pages/ExamReview';
+import GradeExam from './pages/GradeExam';
 import { isAuthenticated } from './utils/auth';
 
 function App() {
-  console.log('App component rendering...');
-  console.log('isAuthenticated():', isAuthenticated());
   
   return (
     <Router>
@@ -17,7 +15,9 @@ function App() {
         <Routes>
           <Route 
             path="/login" 
-            element={<LoginPage />}
+            element={
+              isAuthenticated() ? <Navigate to="/dashboard" replace /> : <LoginPage />
+            }
           />
           <Route 
             path="/dashboard" 
@@ -32,15 +32,15 @@ function App() {
             } 
           />
           <Route 
-            path="/admin/exams/:examId/questions" 
-            element={
-              isAuthenticated() ? <QuestionManager /> : <Navigate to="/login" replace />
-            } 
-          />
-          <Route 
             path="/exam-review/:attemptId" 
             element={
               isAuthenticated() ? <ExamReview /> : <Navigate to="/login" replace />
+            } 
+          />
+          <Route 
+            path="/grade-exam" 
+            element={
+              isAuthenticated() ? <GradeExam /> : <Navigate to="/login" replace />
             } 
           />
           <Route path="/" element={<Navigate to="/login" replace />} />

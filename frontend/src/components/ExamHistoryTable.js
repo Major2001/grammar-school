@@ -28,7 +28,6 @@ const ExamHistoryTable = ({ examAttempts, loading }) => {
             <th>Date Taken</th>
             <th>Score</th>
             <th>Percentage</th>
-            <th>Duration</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -47,9 +46,6 @@ const ExamHistoryTable = ({ examAttempts, loading }) => {
                 <span className={`percentage-badge ${getPercentageClass(attempt.score_percentage)}`}>
                   {attempt.score_percentage?.toFixed(1) || 0}%
                 </span>
-              </td>
-              <td className="duration">
-                {attempt.duration_minutes ? `${attempt.duration_minutes} min` : 'N/A'}
               </td>
               <td className="status">
                 <span className={`status-badge ${attempt.status}`}>

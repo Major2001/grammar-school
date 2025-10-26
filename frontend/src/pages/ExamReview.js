@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { userAPI } from '../services/api';
 import { getUser, logout } from '../utils/auth';
@@ -14,11 +14,7 @@ const ExamReview = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    fetchExamReviewData();
-  }, [attemptId]);
-
-  const fetchExamReviewData = async () => {
+  const fetchExamReviewData = useCallback(async () => {
     try {
       const response = await userAPI.getExamAttemptDetails(attemptId);
       const { attempt: attemptData, exam: examData, questions: questionsData } = response.data;
@@ -38,7 +34,11 @@ const ExamReview = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [attemptId]);
+
+  useEffect(() => {
+    fetchExamReviewData();
+  }, [attemptId, fetchExamReviewData]);
 
   const handleLogout = () => {
     logout();
@@ -109,10 +109,6 @@ const ExamReview = () => {
               </span>
             </div>
             <div className="stat">
-              <span className="stat-label">Duration:</span>
-              <span className="stat-value">
-                {attempt?.duration_minutes ? `${attempt.duration_minutes} minutes` : 'N/A'}
-              </span>
             </div>
             <div className="stat">
               <span className="stat-label">Status:</span>
