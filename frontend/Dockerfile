@@ -22,15 +22,11 @@ FROM nginx:alpine
 # Copy built app to nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Use default nginx configuration (we'll override with volume mount)
-# Don't copy nginx.conf here - it will be mounted as a volume
+# Use default nginx configuration
+# The nginx container will use its default config
 
 # Expose port
 EXPOSE 80
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost/ || exit 1
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
