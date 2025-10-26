@@ -212,17 +212,27 @@ If you don't have Git repository set up:
    unzip grammar-school.zip
    ```
 
-4. **Start the application**:
+4. **Update Docker Compose (if needed)**:
    ```bash
-   docker-compose up -d
+   # Check current version
+   docker-compose --version
+   
+   # If version is too old, update it
+   sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+   sudo chmod +x /usr/local/bin/docker-compose
    ```
 
-5. **Check if everything is running**:
+5. **Start the application**:
+   ```bash
+   docker-compose up -d --build
+   ```
+
+6. **Check if everything is running**:
    ```bash
    docker-compose ps
    ```
 
-6. **View logs** (if needed):
+7. **View logs** (if needed):
    ```bash
    docker-compose logs -f
    ```
@@ -494,6 +504,40 @@ ssh -i grammar-school-key.pem ec2-user@YOUR_PUBLIC_IP "/home/ec2-user/deploy.sh"
    
    # Then clone again
    git clone https://github.com/yourusername/grammar-school.git /home/ec2-user/grammar-school
+   ```
+
+3. **Docker Compose buildx version error**
+   ```bash
+   # Install Docker Buildx plugin
+   mkdir -p ~/.docker/cli-plugins/
+   curl -SL https://github.com/docker/buildx/releases/latest/download/buildx-$(uname -s)-$(uname -m) -o ~/.docker/cli-plugins/docker-buildx
+   chmod +x ~/.docker/cli-plugins/docker-buildx
+   
+   # Verify buildx version
+   docker buildx version
+   
+   # Try building again
+   docker-compose up -d --build
+   ```
+
+4. **Alternative: Use Docker build instead of compose build**
+   ```bash
+   # Build images manually
+   docker build -t grammar-school-backend ./backend
+   docker build -t grammar-school-frontend ./frontend
+   
+   # Start with compose (without build)
+   docker-compose up -d
+   ```
+
+4. **Docker Compose version warning**
+   ```bash
+   # Remove the obsolete version line from docker-compose.yml
+   sed -i '1d' docker-compose.yml
+   
+   # Or manually edit the file
+   nano docker-compose.yml
+   # Remove the first line: version: '3.8'
    ```
 
 ### Application Not Accessible
