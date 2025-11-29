@@ -7,9 +7,9 @@ services:
     container_name: grammar-school-backend
     environment:
       - DATABASE_URL=sqlite:///grammar_school.db
-      - SECRET_KEY=your-secret-key-change-in-production
-      - JWT_SECRET_KEY=your-jwt-secret-key-change-in-production
-      - FLASK_ENV=development
+      - SECRET_KEY=${SECRET_KEY}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - FLASK_ENV=${FLASK_ENV}
     ports:
       - "5001:5001"
     networks:
@@ -26,7 +26,7 @@ services:
   # Frontend
   frontend:
     build:
-      context: ./frontend  # Change back to frontend directory
+      context: ./frontend
       dockerfile: Dockerfile
     container_name: grammar-school-frontend
     environment:
