@@ -27,7 +27,21 @@ def create_app(config_name=None):
     db.init_app(app)
     migrate.init_app(app, db)
     jwt.init_app(app)
-    CORS(app)
+    
+    # Configure CORS
+    # Allow all origins in development, specific origins in production
+    cors_origins = os.getenv('CORS_ORIGINS', '*')
+    if cors_origins == '*':
+        CORS(app, resources={r"/api/*": {"origins": "*"}})
+    else:
+        # Parse comma-separated origins
+        origins = [origin.strip() for origin in cors_origins.split(',')]
+        CORS(app, resources={r"/api/*": {
+            "origins": origins,
+            "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True
+        }})
     
     # Import models to register them with SQLAlchemy
     from app.models.user import User
