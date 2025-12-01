@@ -28,10 +28,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        # Pass API URL as build argument (React env vars must be set at build time)
+        REACT_APP_API_URL: /api
     container_name: grammar-school-frontend
-    environment:
-      # Use relative URL - nginx will proxy /api to backend
-      - REACT_APP_API_URL=/api
     ports:
       - "3000:80"
     networks:
