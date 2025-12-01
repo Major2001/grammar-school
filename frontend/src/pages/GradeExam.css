@@ -56,6 +56,20 @@
   text-align: center;
 }
 
+.no-exams {
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.no-exams p {
+  color: #666;
+  font-size: 18px;
+  margin: 0;
+}
+
 .exams-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));

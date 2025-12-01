@@ -139,7 +139,7 @@ const GradeExam = () => {
       <main className="grade-exam-content">
         {!selectedExam ? (
           <div className="exam-selection">
-            <h2>Select an Exam to Grade</h2>
+            <h2>{exams.length === 0 && !loading && !error ? 'No exams to grade' : 'Select an Exam to Grade'}</h2>
             {loading ? (
               <div className="loading">Loading exams...</div>
             ) : error ? (
@@ -148,6 +148,10 @@ const GradeExam = () => {
                 <button onClick={fetchExams} className="retry-btn">
                   Try Again
                 </button>
+              </div>
+            ) : exams.length === 0 ? (
+              <div className="no-exams">
+                <p>No exams to grade</p>
               </div>
             ) : (
               <div className="exams-grid">
