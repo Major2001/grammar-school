@@ -4,6 +4,11 @@ from app.models.user import User
 from app.models.exam import Exam
 from app.models.exam_attempt import ExamAttempt
 from app import db
+import logging
+import traceback
+
+# Create module-level logger
+logger = logging.getLogger(__name__)
 
 exams_bp = Blueprint('exams', __name__)
 
@@ -34,6 +39,10 @@ def get_exams():
     """
     user_id = get_jwt_identity()
     user = User.query.get(int(user_id))
+    
+    # Validate user exists
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
     
     try:
         # Get query parameters
@@ -80,6 +89,9 @@ def get_exams():
             }), 200
             
     except Exception as e:
+        # Log the exception with full traceback
+        logger.error(f"Exception in get_exams: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({'error': 'Failed to fetch exams'}), 500
 
 @exams_bp.route('/exams', methods=['POST'])
@@ -130,7 +142,9 @@ def create_exam():
         
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': f'Failed to create exam: {str(e)}'}), 500
+        logger.error(f"Exception in create_exam: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'error': 'Failed to create exam'}), 500
 
 @exams_bp.route('/exams/<int:exam_id>', methods=['GET'])
 @jwt_required()
@@ -165,6 +179,8 @@ def get_exam(exam_id):
             'exam': exam_data
         }), 200
     except Exception as e:
+        logger.error(f"Exception in get_exam: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({'error': 'Failed to fetch exam'}), 500
 
 @exams_bp.route('/exams/<int:exam_id>/questions', methods=['GET'])
@@ -199,6 +215,8 @@ def get_exam_questions(exam_id):
             'questions': questions_data
         }), 200
     except Exception as e:
+        logger.error(f"Exception in get_exam_questions: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({'error': 'Failed to fetch exam questions'}), 500
 
 @exams_bp.route('/exams/<int:exam_id>', methods=['DELETE'])
@@ -226,8 +244,9 @@ def delete_exam(exam_id):
         }), 200
     except Exception as e:
         db.session.rollback()
-        print(f"Error deleting exam: {str(e)}")  # Log the actual error
-        return jsonify({'error': f'Failed to delete exam: {str(e)}'}), 500
+        logger.error(f"Exception in delete_exam: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'error': 'Failed to delete exam'}), 500
 
 @exams_bp.route('/exams/<int:exam_id>', methods=['PATCH'])
 @jwt_required()
@@ -303,6 +322,8 @@ def update_exam(exam_id):
             
     except Exception as e:
         db.session.rollback()
+        logger.error(f"Exception in update_exam: {str(e)}")
+        logger.error(traceback.format_exc())
         return jsonify({'error': 'Failed to update exam'}), 500
 
 # Note: Questions are now generated dynamically for grading

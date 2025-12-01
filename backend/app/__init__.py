@@ -6,6 +6,8 @@ from flask_jwt_extended import JWTManager
 from dotenv import load_dotenv
 from datetime import timedelta
 import os
+import logging
+import sys
 
 # Load environment variables
 load_dotenv()
@@ -22,6 +24,27 @@ def create_app(config_name=None):
     from config import config
     config_name = config_name or os.getenv('FLASK_ENV', 'default')
     app.config.from_object(config[config_name])
+    
+    # Configure logging - INFO level and exceptions only
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s [%(levelname)s] %(name)s: %(message)s',
+        handlers=[
+            logging.StreamHandler(sys.stdout)
+        ],
+        force=True  # Override any existing configuration
+    )
+    
+    # Set Flask logger to INFO
+    app.logger.setLevel(logging.INFO)
+    
+    # Keep Werkzeug request logging at INFO level
+    werkzeug_logger = logging.getLogger('werkzeug')
+    werkzeug_logger.setLevel(logging.INFO)
+    
+    # Suppress SQLAlchemy query logging
+    sqlalchemy_logger = logging.getLogger('sqlalchemy.engine')
+    sqlalchemy_logger.setLevel(logging.INFO)
     
     # Initialize extensions with app
     db.init_app(app)
@@ -60,5 +83,15 @@ def create_app(config_name=None):
     app.register_blueprint(health_bp, url_prefix='/api')
     app.register_blueprint(exams_bp, url_prefix='/api')
     app.register_blueprint(exam_attempt_bp, url_prefix='/api')
+    
+    # Register error handlers for exception logging
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        """Log all unhandled exceptions with full traceback"""
+        import traceback
+        app.logger.error(f"Unhandled exception: {str(e)}")
+        app.logger.error(traceback.format_exc())
+        # Re-raise to let Flask handle it normally
+        raise
     
     return app
