@@ -26,8 +26,8 @@ FROM nginx:alpine
 # Copy built app to nginx
 COPY --from=build /app/build /usr/share/nginx/html
 
-# Use default nginx configuration
-# The nginx container will use its default config
+# Copy custom nginx configuration for SPA routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port
 EXPOSE 80
